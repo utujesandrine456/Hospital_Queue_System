@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { HeartPulse, Menu, X, ShieldCheck, Activity } from 'lucide-react'
 import { useNetworkStore } from '@/store/networkStore'
 import { cn } from '@/lib/utils'
-
+import Image from 'next/image'
 export function Header() {
     const { isOnline } = useNetworkStore()
     const [isScrolled, setIsScrolled] = useState(false)
@@ -34,9 +34,8 @@ export function Header() {
                 isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-2xl shadow-sage/10 border-white/40' : 'bg-transparent'
             )}>
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="flex flex-col">
-                        <span className="text-3xl font-black text-sage">MediQueue</span>
-                    </div>
+                    <Image src="/images/logo.png" alt="MediQueue Logo" width={56} height={56} className="w-12 h-12 lg:w-14 lg:h-14 object-cover rounded-full shadow-lg border-2 border-white/50" priority />
+                    <span className="text-2xl lg:text-3xl font-black text-sage tracking-tight">MediQueue</span>
                 </Link>
 
                 {/* Desktop Nav */}

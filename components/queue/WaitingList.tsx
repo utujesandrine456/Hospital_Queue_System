@@ -82,7 +82,7 @@ export function WaitingList({ tickets }: WaitingListProps) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -16 }}
                   transition={{ delay: i * 0.04 }}
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-sage/8 hover:border-sage/25 hover:shadow-lg hover:shadow-sage/8 transition-all duration-300 cursor-default"
+                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-sage/8 hover:border-sage/25 hover:shadow-lg hover:shadow-sage/8 transition-all duration-300 cursor-pointer"
                 >
                   {/* Position bubble */}
                   <div className={cn(

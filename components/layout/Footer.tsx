@@ -2,6 +2,7 @@
 
 import { HeartPulse, Mail, Phone, MapPin, Globe, Share2, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export function Footer() {
     return (
@@ -16,12 +17,8 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-24">
                     <div className="space-y-8">
                         <Link href="/" className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-sage flex items-center justify-center text-cream shadow-xl">
-                                <HeartPulse size={28} strokeWidth={2.5} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xl font-bold leading-none">MediQueue</span>
-                            </div>
+                            <Image src="/images/logo.png" alt="MediQueue Logo" width={64} height={64} className="w-16 h-16 object-cover rounded-full shadow-2xl bg-white/10 border-2 border-sage/20 p-0.5" />
+                            <span className="text-3xl font-black text-cream tracking-tight">MediQueue</span>
                         </Link>
                         <p className="text-sage/40 text-sm font-medium leading-relaxed">
                             Transforming patient experiences through intelligent technology and compassionate care. Offline-first and always synced.

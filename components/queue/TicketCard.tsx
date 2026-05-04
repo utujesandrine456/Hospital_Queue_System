@@ -4,6 +4,7 @@ import type { QueueTicket } from '@/types'
 import { motion } from 'framer-motion'
 import { Clock, Stethoscope, FlaskConical, Pill, Microscope, Activity, HeartPulse } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import { SERVICE_CONFIG } from '@/lib/queue/engine'
 
 const ICON_MAP = {
@@ -59,13 +60,13 @@ export function TicketCard({ ticket }: TicketCardProps) {
 
           {/* Header */}
           <div className="relative flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
-                <HeartPulse size={18} className="text-white" strokeWidth={2.5} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white shadow-lg border border-white/20 overflow-hidden flex items-center justify-center shrink-0">
+                <Image src="/images/logo.png" alt="MediQueue" width={40} height={40} className="w-full h-full object-cover" />
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-none">MediQueue</p>
-                <p className="text-white/50 text-[10px] font-bold">Smart Health</p>
+                <p className="text-white font-bold text-[15px] leading-tight tracking-wide">MediQueue</p>
+                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Smart Health</p>
               </div>
             </div>
             {/* Status badge */}

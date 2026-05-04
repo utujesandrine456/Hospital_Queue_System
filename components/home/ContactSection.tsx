@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Phone, Send, CheckCheck, Activity } from 'lucide-react'
+import Image from 'next/image'
 
 interface Message {
     id: number
@@ -103,7 +104,7 @@ export function ContactSection() {
                                     },
                                     {
                                         icon: <Phone size={22} />,
-                                        label: 'Direct Line',
+                                        label: 'Phone Call',
                                         value: '+250 784 376 747',
                                         detail: 'Emergency & technical support',
                                     },
@@ -114,9 +115,9 @@ export function ContactSection() {
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
                                         transition={{ delay: 0.1 * i }}
-                                        className="group flex items-start gap-6 p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-sage/30 hover:bg-white/10 transition-all duration-300 cursor-default"
+                                        className="cursor-pointer group flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-sage/30 hover:bg-white/10 transition-all duration-300"
                                     >
-                                        <div className="w-14 h-14 shrink-0 rounded-full bg-sage/10 border border-sage/20 flex items-center justify-center text-sage group-hover:bg-sage group-hover:text-cream transition-all duration-300">
+                                        <div className="w-12 h-12 shrink-0 rounded-full bg-sage/10 border border-sage/20 flex items-center justify-center text-sage group-hover:bg-sage group-hover:text-cream transition-all duration-300">
                                             {item.icon}
                                         </div>
                                         <div className="min-w-0">
@@ -158,8 +159,8 @@ export function ContactSection() {
 
                                     {/* Chat Header */}
                                     <div className="flex items-center gap-4 px-8 py-5 bg-white border-b border-[#2C3639]/5 shadow-sm">
-                                        <div className="w-12 h-12 rounded-full bg-sage flex items-center justify-center shrink-0 shadow-lg shadow-sage/20">
-                                            <span className="text-sm font-black text-cream">MQ</span>
+                                        <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shrink-0 shadow-lg shadow-sage/20 border-2 border-sage/10 overflow-hidden">
+                                            <Image src="/images/logo.png" alt="MQ" width={56} height={56} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[16px] font-semibold text-[#2C3639]">MediQueue Care</p>
