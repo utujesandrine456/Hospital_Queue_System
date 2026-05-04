@@ -21,7 +21,7 @@ export function Footer() {
                                 <HeartPulse size={28} strokeWidth={2.5} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xl font-bold leading-none">BlinkCare</span>
+                                <span className="text-xl font-bold leading-none">MediQueue</span>
                             </div>
                         </Link>
                         <p className="text-sage/40 text-sm font-medium leading-relaxed">
@@ -82,7 +82,7 @@ export function Footer() {
 
                 <div className="mt-12 pt-6 border-t border-sage/5 flex flex-col md:flex-row justify-between items-center gap-6 text-center">
                     <p className="text-xs font-bold text-sage/20">
-                        © 2026 BlinkCare. Designed for the Future of Healthcare.
+                        © 2026 MediQueue. Designed for the Future of Healthcare.
                     </p>
                 </div>
             </div>

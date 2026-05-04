@@ -43,23 +43,13 @@ export function ServiceSelector() {
   }
 
   return (
-    <div className="space-y-16">
-      <div className="text-center space-y-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="inline-flex items-center gap-3 px-5 py-2 rounded-2xl bg-sage/10 border border-sage/10 text-sage text-xs font-bold italic"
-        >
-          <Sparkles size={14} />
-          Premium Care Selection
-        </motion.div>
-        <h2 className="text-5xl lg:text-7xl font-bold text-[#2C3639] leading-tight">
-          How can we <br />
-          <span className="text-sage italic">Help you today?</span>
+    <div className="space-y-8">
+      <div className="text-center space-y-2 mb-8">
+        <h2 className="text-5xl lg:text-6xl font-bold text-[#2C3639] leading-tight">
+          How can we <span className='text-sage italic'>Help you today?</span>
         </h2>
-        <p className="text-lg text-sage/60 font-medium max-w-2xl mx-auto italic">
-          Select a clinical department to join the professional priority queue.
+        <p className="text-md text-sage/60 font-medium max-w-2xl mx-auto italic">
+          Select a clinical department to join the priority queue.
         </p>
       </div>
 
@@ -85,7 +75,7 @@ export function ServiceSelector() {
             >
               <div className={cn(
                 "absolute -top-12 -right-12 w-40 h-40 rounded-full transition-all duration-700",
-                isSelected ? "bg-white/10" : "bg-sage/5 group-hover:bg-sage/10"
+                isSelected ? "bg-white/10" : "bg-sage/10 group-hover:bg-sage/15"
               )} />
 
               <div className="relative z-10 space-y-8">
@@ -153,7 +143,7 @@ export function ServiceSelector() {
                 "w-full group relative px-8 py-5 bg-[#2C3639] text-cream rounded-xl font-bold text-lg transition-all shadow-xl hover:bg-sage active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none",
               )}
             >
-              <div className=" cursor-pointer flex items-center justify-center gap-3">
+              <div className="cursor-pointer flex items-center justify-center gap-3">
                 {isGenerating ? (
                   <>
                     <Loader2 className="animate-spin" size={24} />

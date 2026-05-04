@@ -30,16 +30,12 @@ export function Header() {
             )}
         >
             <div className={cn(
-                'max-w-7xl mx-auto rounded-3xl transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-3',
+                'max-w-7xl mx-auto rounded-lg transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-3',
                 isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-2xl shadow-sage/10 border-white/40' : 'bg-transparent'
             )}>
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 rounded-xl bg-sage flex items-center justify-center text-cream shadow-lg group-hover:rotate-12 transition-transform duration-500">
-                        <HeartPulse size={24} strokeWidth={2.5} />
-                    </div>
                     <div className="flex flex-col">
-                        <span className="text-lg font-bold text-[#2C3639] leading-none">BlinkCare</span>
-                        <span className="text-[10px] font-bold text-sage/60 italic">Smart Queue</span>
+                        <span className="text-4xl font-black text-sage">MediQueue</span>
                     </div>
                 </Link>
 
@@ -62,7 +58,7 @@ export function Header() {
                             "w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]",
                             (mounted && isOnline) ? "bg-sage shadow-sage/40" : "bg-red-400 animate-pulse"
                         )} />
-                        <span className="text-xs font-bold text-[#2C3639]/60">
+                        <span className="text-sm font-bold text-[#2C3639]/60">
                             {(mounted && isOnline) ? 'System Live' : 'Syncing Offline'}
                         </span>
                     </div>
@@ -97,11 +93,6 @@ export function Header() {
                                     {item}
                                 </Link>
                             ))}
-                            <hr className="border-sage/5" />
-                            <div className="flex items-center gap-4 py-2">
-                                <ShieldCheck size={20} className="text-sage" />
-                                <span className="text-sm font-bold text-sage/60">Verified Care System</span>
-                            </div>
                         </div>
                     </motion.div>
                 )}

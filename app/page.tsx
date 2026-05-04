@@ -30,16 +30,6 @@ export default function HomePage() {
     <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-20">
       <Header />
 
-      <div className="fixed inset-0 opacity-[0.2] pointer-events-none z-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(var(--primary-sage) 1.5px, transparent 1.5px)`,
-            backgroundSize: '48px 48px',
-          }}
-        />
-      </div>
-
       <div className="relative z-10">
         <HeroSection />
 
@@ -59,14 +49,14 @@ export default function HomePage() {
         <section id="about" className="py-32 bg-white/40">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <h2 className="text-4xl lg:text-6xl font-bold text-[#2C3639] mb-8">Redefining Patient Care.</h2>
-            <p className="text-lg text-sage/60 font-medium max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-[#2C3639]/60 font-medium max-w-2xl mx-auto leading-relaxed">
               Our system combines advanced queue deterministic algorithms with an intuitive interface to ensure you never lose your spot, even when offline.
             </p>
           </div>
         </section>
 
         <ContactSection />
-      </div>
+      </div>  
 
       <Footer />
     </main>

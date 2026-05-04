@@ -70,7 +70,7 @@ export function ContactSection() {
                             >
                                 <motion.div
                                     animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ repeat: Infinity, duration: 4 }}
+                                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                                     className="w-48 h-48 bg-sage/20 rounded-full blur-[60px]"
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center p-12 text-center space-y-4">
