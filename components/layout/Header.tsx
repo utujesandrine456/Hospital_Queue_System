@@ -30,24 +30,34 @@ export function Header() {
             )}
         >
             <div className={cn(
-                'max-w-7xl mx-auto rounded-lg transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-3',
+                'max-w-7xl mx-auto rounded-full transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-3',
                 isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-2xl shadow-sage/10 border-white/40' : 'bg-transparent'
             )}>
                 <Link href="/" className="flex items-center gap-3 group">
                     <div className="flex flex-col">
-                        <span className="text-4xl font-black text-sage">MediQueue</span>
+                        <span className="text-3xl font-black text-sage">MediQueue</span>
                     </div>
                 </Link>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
-                    {['Services', 'About', 'Contact'].map((item) => (
+                    {['Home', 'Services', 'About', 'Contact'].map((item) => (
                         <Link
                             key={item}
-                            href={`#${item.toLowerCase()}`}
-                            className="text-sm font-bold text-[#2C3639]/70 hover:text-sage transition-colors"
+                            href={`#${item.toLowerCase() === 'home' ? '' : item.toLowerCase()}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const targetId = item.toLowerCase() === 'home' ? 'hero' : item.toLowerCase();
+                                const element = document.getElementById(targetId) || (targetId === 'hero' ? document.body : null);
+                                if (element) {
+                                    const y = element.getBoundingClientRect().top + window.scrollY - 100;
+                                    window.scrollTo({ top: targetId === 'hero' ? 0 : y, behavior: 'smooth' });
+                                }
+                            }}
+                            className="group relative text-sm font-bold text-[#2C3639]/70 hover:text-sage transition-colors py-1"
                         >
                             {item}
+                            <span className="absolute bottom-0 left-1/2 w-full h-[4px] rounded-full bg-sage origin-center -translate-x-1/2 scale-x-0 group-hover:scale-x-60 transition-transform duration-300 ease-out" />
                         </Link>
                     ))}
 
@@ -83,11 +93,20 @@ export function Header() {
                         className="absolute top-full left-6 right-6 mt-4 p-6 bg-white/95 backdrop-blur-2xl rounded-4xl border border-white shadow-2xl md:hidden"
                     >
                         <div className="flex flex-col gap-6">
-                            {['Services', 'About', 'Contact'].map((item) => (
+                            {['Home', 'Services', 'About', 'Contact'].map((item) => (
                                 <Link
                                     key={item}
-                                    href={`#${item.toLowerCase()}`}
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    href={`#${item.toLowerCase() === 'home' ? '' : item.toLowerCase()}`}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setIsMobileMenuOpen(false);
+                                        const targetId = item.toLowerCase() === 'home' ? 'hero' : item.toLowerCase();
+                                        const element = document.getElementById(targetId) || (targetId === 'hero' ? document.body : null);
+                                        if (element) {
+                                            const y = element.getBoundingClientRect().top + window.scrollY - 100;
+                                            window.scrollTo({ top: targetId === 'hero' ? 0 : y, behavior: 'smooth' });
+                                        }
+                                    }}
                                     className="text-2xl font-bold text-[#2C3639] hover:text-sage transition-colors"
                                 >
                                     {item}

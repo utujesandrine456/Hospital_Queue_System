@@ -16,14 +16,12 @@ export function WaitingList({ tickets }: WaitingListProps) {
 
   return (
     <div className="h-full flex flex-col gap-8">
-
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-2xl font-bold text-[#2C3639]">Waiting Lounge</h3>
-          <p className="text-sm font-bold text-sage/50 mt-0.5">Real-time priority list</p>
+          <p className="text-sm font-medium text-sage/50 mt-0.5">Real-time priority list</p>
         </div>
-        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white border border-sage/10 shadow-sm text-sage">
+        <div className="flex items-center gap-2.5 px-4 py-3 rounded-md bg-white border border-sage/10 shadow-sm text-sage">
           <Users size={16} strokeWidth={2.5} />
           <span className="font-bold text-sm">{tickets.length} in queue</span>
         </div>
@@ -46,7 +44,7 @@ export function WaitingList({ tickets }: WaitingListProps) {
               <motion.div
                 key={ticket.id}
                 layout
-                className="relative overflow-hidden flex items-center gap-5 p-5 rounded-3xl bg-sage shadow-xl shadow-sage/20"
+                className="relative overflow-hidden flex items-center gap-5 p-5 rounded-lg bg-sage shadow-xl shadow-sage/20"
               >
                 {/* shimmer */}
                 <motion.div
@@ -54,7 +52,7 @@ export function WaitingList({ tickets }: WaitingListProps) {
                   transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
                   className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent pointer-events-none"
                 />
-                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center font-bold text-2xl text-white shrink-0 border border-white/20 shadow-inner">
+                <div className="w-16 h-16 rounded-full p-2 bg-white/20 flex items-center justify-center font-bold text-md text-white shrink-0 border border-white/20 shadow-inner">
                   #{ticket.ticketNumber}
                 </div>
                 <div className="flex-1 min-w-0">

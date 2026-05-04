@@ -119,9 +119,8 @@ export default function QueuePage() {
             Back to services
           </button>
 
-          <div className="mb-6">
+          <div className="mb-6 text-center align-center items-center justify-center">
             <h1 className="text-3xl font-bold text-[#2C3639]">Your Queue Ticket</h1>
-            <p className="text-sage/50 text-[14px] font-semibold mt-1">Live Status Update</p>
           </div>
 
           <div className="space-y-8">

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { NetworkStoreState } from '@/types'
 
 export const useNetworkStore = create<NetworkStoreState>((set) => ({
-  isOnline: true, // Initialize to true for consistent hydration, updated by hook on client mount
+  isOnline: true,
   lastOnlineAt: null,
 
   setOnline: (val: boolean) =>

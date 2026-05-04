@@ -1,12 +1,11 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { HeartPulse, Mail, Phone, MapPin, Globe, Share2, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
 export function Footer() {
     return (
-        <footer className="relative bg-[#2C3639] text-cream mt-16">
+        <footer className="relative bg-[#2C3639] text-cream mt-32">
             <div className="absolute top-0 left-0 right-0 -translate-y-full overflow-hidden leading-none rotate-180">
                 <svg className="relative block w-full h-24" viewBox="0 0 1200 120" preserveAspectRatio="none">
                     <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#2C3639"></path>
@@ -66,15 +65,15 @@ export function Footer() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-4 text-sage/40">
                                 <Phone size={18} />
-                                <span className="text-sm font-bold">+250 788 000 000</span>
+                                <span className="text-sm font-bold">+250 784 376 747</span>
                             </div>
                             <div className="flex items-center gap-4 text-sage/40">
                                 <Mail size={18} />
-                                <span className="text-sm font-bold">care@blinkcare.rw</span>
+                                <span className="text-sm font-bold">ingogatechnologies@gmail.com</span>
                             </div>
                             <div className="flex items-center gap-4 text-sage/40">
                                 <MapPin size={18} />
-                                <span className="text-sm font-bold leading-relaxed">KN 20 St, Kigali City, Rwanda</span>
+                                <span className="text-sm font-bold leading-relaxed">Kigali, Rwanda</span>
                             </div>
                         </div>
                     </div>

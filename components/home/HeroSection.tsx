@@ -6,7 +6,7 @@ import Image from 'next/image'
 
 export function HeroSection() {
     return (
-        <section className="relative pt-16 pb-0 overflow-visible bg-[#F3EFE3]">
+        <section className="relative pt-16 pb-0 px-12 overflow-visible bg-[#F3EFE3]">
             {/* Subtle hex pattern overlay */}
             <div
                 className="absolute inset-0 opacity-[0.06] pointer-events-none"
@@ -62,16 +62,16 @@ export function HeroSection() {
                             className="grid grid-cols-4 gap-4 pt-6 border-t border-[#769382]/15"
                         >
                             {[
-                                { value: '4500+', label: 'Happy Patients' },
-                                { value: '200', label: 'Hospital Rooms' },
-                                { value: '500+', label: 'Awards Won' },
-                                { value: '20+', label: 'Ambulances' },
+                                { value: '27+', label: 'Happy Patients' },
+                                { value: '4+', label: 'Services' },
+                                { value: '10+', label: 'Doctors' },
+                                { value: '1+', label: 'Ambulances' },
                             ].map((stat) => (
-                                <div key={stat.label} className="flex flex-col group cursor-default">
+                                <div key={stat.label} className="cursor-pointer flex flex-col group">
                                     <span className="text-3xl font-bold text-[#2C3639] group-hover:text-[#769382] transition-colors">
                                         {stat.value}
                                     </span>
-                                    <span className="text-xs font-bold text-[#2C3639]/50 mt-1">{stat.label}</span>
+                                    <span className="text-xs font-semibold text-[#2C3639]/50 mt-1">{stat.label}</span>
                                 </div>
                             ))}
                         </motion.div>
@@ -102,9 +102,9 @@ export function HeroSection() {
                             <Image
                                 src="/images/hero_image_Updated.png"
                                 alt="MediQueue doctor"
-                                width={520}
-                                height={500}
-                                className="object-contain object-bottom h-[108%] w-auto drop-shadow-2xl select-none"
+                                width={560}
+                                height={560}
+                                className="object-contain object-bottom h-[120%] w-auto drop-shadow-2xl select-none"
                                 priority
                             />
                         </motion.div>

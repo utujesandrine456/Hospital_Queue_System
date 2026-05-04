@@ -49,7 +49,6 @@ export function TicketCard({ ticket }: TicketCardProps) {
         isServing ? "border-sage/40 shadow-sage/15" : "border-sage/10 shadow-[#2C3639]/5"
       )}>
 
-        {/* ===== TICKET TOP SECTION ===== */}
         <div className={cn(
           "relative px-7 pt-7 pb-6 overflow-hidden",
           isServing ? "bg-sage" : "bg-[#2C3639]"
@@ -84,7 +83,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
 
           {/* Big ticket number */}
           <div className="relative text-center">
-            <p className="text-white/40 text-[10px] font-bold mb-1">Ticket Number</p>
+            <p className="text-white/40 text-[12px] font-semibold mb-1">Ticket Number</p>
             <h2 className="text-7xl font-bold text-white leading-none">
               #{ticket.ticketNumber}
             </h2>
