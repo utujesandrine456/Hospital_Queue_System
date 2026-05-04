@@ -102,8 +102,8 @@ export function HeroSection() {
                             <Image
                                 src="/images/hero_image_Updated.png"
                                 alt="MediQueue doctor"
-                                width={560}
-                                height={560}
+                                width={600}
+                                height={600}
                                 className="object-contain object-bottom h-[120%] w-auto drop-shadow-2xl select-none"
                                 priority
                             />
