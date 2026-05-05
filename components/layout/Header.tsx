@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { HeartPulse, Menu, X, ShieldCheck, Activity } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useNetworkStore } from '@/store/networkStore'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -30,7 +30,7 @@ export function Header() {
             )}
         >
             <div className={cn(
-                'max-w-7xl mx-auto rounded-full transition-all duration-500 border border-transparent flex items-center justify-between px-6',
+                'max-w-7xl mx-auto rounded-full transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-1',
                 isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-2xl shadow-sage/10 border-white/40' : 'bg-transparent'
             )}>
                 <Link href="/" className="flex items-center gap-3 group">
@@ -68,12 +68,11 @@ export function Header() {
                             (mounted && isOnline) ? "bg-sage shadow-sage/40" : "bg-red-400 animate-pulse"
                         )} />
                         <span className="text-sm font-bold text-[#2C3639]/60">
-                            {(mounted && isOnline) ? 'System Live' : 'Syncing Offline'}
+                            {(mounted && isOnline) ? 'System Online' : 'System Offline'}
                         </span>
                     </div>
                 </nav>
 
-                {/* Mobile Toggle */}
                 <button
                     className="md:hidden p-2 text-sage hover:bg-sage/5 rounded-xl transition-colors"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -82,7 +81,6 @@ export function Header() {
                 </button>
             </div>
 
-            {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div

@@ -207,7 +207,7 @@ export function ServiceSelector() {
 
                   <button
                     onClick={() => router.push(`/queue/${myTicket!.id}`)}
-                    className="w-full group flex items-center justify-center gap-3 px-8 py-4 bg-[#2C3639] text-cream rounded-xl font-bold text-base transition-all hover:bg-sage active:scale-[0.98] shadow-xl"
+                    className="cursor-pointer w-full group flex items-center justify-center gap-3 px-8 py-4 bg-[#2C3639] text-cream rounded-xl font-bold text-base transition-all hover:bg-sage active:scale-[0.98] shadow-xl"
                   >
                     <ExternalLink size={18} className="group-hover:scale-110 transition-transform" />
                     View My Ticket
@@ -216,7 +216,7 @@ export function ServiceSelector() {
                 </div>
               </div>
             ) : (
-              /* ─── Normal ticket generation form ─── */
+
               <div className="bg-white p-6 sm:p-8 rounded-4xl border border-sage/10 shadow-2xl shadow-sage/5 space-y-6">
                 <div className="space-y-3">
                   <label htmlFor="patientName" className="block text-sm font-bold text-[#2C3639]">

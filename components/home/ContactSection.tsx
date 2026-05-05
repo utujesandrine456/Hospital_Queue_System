@@ -42,7 +42,9 @@ export function ContactSection() {
     const bottomRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (messages.length > 1 || isTyping) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }
     }, [messages, isTyping])
 
     const sendMessage = () => {
