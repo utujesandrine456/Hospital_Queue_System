@@ -23,9 +23,9 @@ export function HeroSection() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, ease: "circOut" }}
-                            className="text-4xl lg:text-8xl font-bold text-[#2C3639]"
+                            className="text-4xl lg:text-7xl font-bold text-[#2C3639]"
                         >
-                            Your Turn, Your Way
+                            No More Waiting in Line
                         </motion.h1>
 
                         <motion.p
@@ -34,7 +34,7 @@ export function HeroSection() {
                             transition={{ duration: 0.8, delay: 0.1, ease: "circOut" }}
                             className="text-lg text-[#2C3639]/60 font-medium max-w-xl leading-relaxed"
                         >
-                            Get a ticket. Sit down. We call you when it's your turn. No more standing in line.
+                            Get a ticket. Sit down. We tell you when the doctor is ready for you. No more standing in line.
                         </motion.p>
 
                         <motion.div
@@ -57,13 +57,12 @@ export function HeroSection() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.5 }}
-                            className="grid grid-cols-4 gap-4 pt-6 border-t border-[#769382]/15"
+                            className="grid grid-cols-3 gap-4 pt-6 border-t border-[#769382]/15"
                         >
                             {[
                                 { value: '27+', label: 'Happy Patients' },
                                 { value: '4+', label: 'Services' },
                                 { value: '10+', label: 'Doctors' },
-                                { value: '1+', label: 'Ambulances' },
                             ].map((stat) => (
                                 <div key={stat.label} className="cursor-pointer flex flex-col group">
                                     <span className="text-3xl font-bold text-[#2C3639] group-hover:text-[#769382] transition-colors">

@@ -229,7 +229,7 @@ export function ServiceSelector() {
                     onChange={e => setPatientName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleGenerateTicket()}
                     placeholder="e.g. John Doe"
-                    className="w-full px-5 py-4 rounded-xl bg-[#ffffff] text-[#2C3639] border border-transparent focus:border-sage focus:ring-4 focus:ring-sage/10 outline-none transition-all font-medium placeholder:text-sage/40"
+                    className="w-full px-5 py-4  rounded-lg bg-[#ffffff] text-[#2C3639] border border-sage/60 focus:border-sage focus:ring-4 focus:ring-sage/10 outline-none transition-all font-medium placeholder:text-sage/40"
                     autoFocus
                   />
                 </div>
@@ -238,19 +238,23 @@ export function ServiceSelector() {
                   onClick={handleGenerateTicket}
                   disabled={isGenerating || !patientName.trim()}
                   className={cn(
-                    'w-full group relative px-8 py-5 bg-[#2C3639] text-cream rounded-xl font-bold text-lg transition-all shadow-xl hover:bg-sage active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none'
+                    'cursor-pointer w-full group relative px-8 py-4 bg-sage text-cream rounded-lg font-bold text-lg transition-all shadow-xl hover:bg-sage active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none'
                   )}
                 >
                   <div className="cursor-pointer flex items-center justify-center gap-3">
                     {isGenerating ? (
                       <>
-                        <Loader2 className="animate-spin" size={24} />
-                        <span>Preparing Care...</span>
+                        <div className="cursor-pointer flex items-center gap-2">
+                          <Loader2 className="animate-spin" size={24} />
+                          <span>Preparing Care...</span>
+                        </div>
                       </>
                     ) : (
                       <>
-                        <span>Generate Ticket</span>
-                        <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                        <div className="cursor-pointer flex items-center gap-2">
+                          <span>Generate Ticket</span>
+                          <ArrowRight className="cursor-pointer group-hover:translate-x-1 transition-transform" size={20} />
+                        </div>
                       </>
                     )}
                   </div>
