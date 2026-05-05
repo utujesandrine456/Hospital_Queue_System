@@ -52,7 +52,7 @@ export function WaitingList({ tickets }: WaitingListProps) {
                   transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
                   className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent pointer-events-none"
                 />
-                <div className="w-16 h-16 rounded-full p-2 bg-white/20 flex items-center justify-center font-bold text-md text-white shrink-0 border border-white/20 shadow-inner">
+                <div className="w-16 h-16 rounded-full p-2 bg-white/20 flex items-center justify-center font-bold text-sm text-white shrink-0 border border-white/20 shadow-inner">
                   #{ticket.ticketNumber}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -84,9 +84,8 @@ export function WaitingList({ tickets }: WaitingListProps) {
                   transition={{ delay: i * 0.04 }}
                   className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-sage/8 hover:border-sage/25 hover:shadow-lg hover:shadow-sage/8 transition-all duration-300 cursor-pointer"
                 >
-                  {/* Position bubble */}
                   <div className={cn(
-                    "w-11 h-11 rounded-xl flex items-center justify-center font-bold text-base shrink-0 transition-all duration-300",
+                    "w-12 h-12 rounded-full flex items-center justify-center text-center font-bold text-xs shrink-0 transition-all duration-300",
                     i === 0
                       ? "bg-amber-50 text-amber-600 border border-amber-200 group-hover:bg-amber-100"
                       : "bg-[#F3EFE3] text-sage group-hover:bg-sage group-hover:text-white"
@@ -94,7 +93,6 @@ export function WaitingList({ tickets }: WaitingListProps) {
                     {ticket.ticketNumber}
                   </div>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-[#2C3639] text-sm truncate">
                       {ticket.patientName !== 'Anonymous' ? ticket.patientName : SERVICE_CONFIG[ticket.serviceType]?.label}

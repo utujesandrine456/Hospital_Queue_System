@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Clock, Stethoscope, FlaskConical, Pill, Microscope, Activity, HeartPulse } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import Link from 'next/link'
 import { SERVICE_CONFIG } from '@/lib/queue/engine'
 
 const ICON_MAP = {
@@ -62,11 +63,11 @@ export function TicketCard({ ticket }: TicketCardProps) {
           <div className="relative flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white shadow-lg border border-white/20 overflow-hidden flex items-center justify-center shrink-0">
-                <Image src="/images/logo.png" alt="MediQueue" width={40} height={40} className="w-full h-full object-cover" />
+                <Image src="/images/logo-image.png" alt="MediQueue" width={40} height={40} className="w-full h-full object-cover" />
               </div>
               <div>
                 <p className="text-white font-bold text-[15px] leading-tight tracking-wide">MediQueue</p>
-                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Smart Health</p>
+                <p className="text-white/60 text-[12px] font-medium">Smart Health</p>
               </div>
             </div>
             {/* Status badge */}
@@ -155,7 +156,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
           {/* Position indicator */}
           {ticket.status !== 'completed' && (
             <div className={cn(
-              "flex items-center justify-between px-4 py-3 rounded-2xl border",
+              "flex items-center justify-between px-4 py-2 rounded-2xl border",
               statusStyle.bg, statusStyle.border
             )}>
               <span className={cn("text-xs font-bold", statusStyle.text)}>Queue Position</span>
@@ -166,6 +167,15 @@ export function TicketCard({ ticket }: TicketCardProps) {
                 </span>
               </div>
             </div>
+          )}
+
+          {ticket.status === 'completed' && (
+            <Link
+              href="/#services"
+              className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-lg bg-sage/10 text-[#2C3639] border border-sage/20 text-sm font-bold hover:bg-[#2C3639] hover:text-white transition-all duration-300"
+            >
+              Get a New Ticket
+            </Link>
           )}
         </div>
       </div>

@@ -11,6 +11,7 @@ import { QueueStatus } from '@/components/queue/QueueStatus'
 import { WaitingList } from '@/components/queue/WaitingList'
 import { Activity, Ticket, ArrowLeft } from 'lucide-react'
 import type { QueueTicket } from '@/types'
+import Image from 'next/image'
 
 export default function QueuePage() {
   const params = useParams()
@@ -47,7 +48,7 @@ export default function QueuePage() {
     }
 
     loadTicket()
-  }, [ticketId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ticketId])
 
   useEffect(() => {
     const updated = allTickets.find(t => t.id === ticketId)
@@ -87,7 +88,7 @@ export default function QueuePage() {
           </div>
           <button
             onClick={() => router.push('/')}
-            className="w-full py-4 text-sage hover:text-sage/80 font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full py-4 text-sage rounded-lg hover:text-sage/80 font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <Ticket size={18} />
             Get another ticket
@@ -98,18 +99,24 @@ export default function QueuePage() {
   }
 
   return (
-    <main className="h-screen bg-[#F3EFE3] flex flex-col lg:flex-row overflow-hidden selection:bg(var(--primary-sage)/20)">
-      <div className="fixed inset-0 opacity-[0.15] pointer-events-none">
+    <main className="relative h-screen bg-[#F3EFE3] flex flex-col lg:flex-row overflow-hidden selection:bg-sage/20">
+      {/* Premium Animated Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-linear-to-br from-[#F3EFE3] via-[#EAF2ED] to-[#F3EFE3]" />
+
+        {/* Animated Glow Orbs */}
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-sage/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-sage/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '12s' }} />
+        <div className="absolute top-[40%] left-[40%] w-[400px] h-[400px] bg-amber-600/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '10s' }} />
+
+        {/* Subtle noise texture */}
         <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(var(--primary-sage) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
-          }}
+          className="absolute inset-0 opacity-[0.035]"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
         />
       </div>
 
-      <div className="relative w-full lg:w-1/2 xl:w-1/2 lg:h-full border-r border-sage/10 z-10 flex flex-col">
+      <div className="relative w-full lg:w-1/2 xl:w-1/2 lg:h-full border-r border-sage/10 z-10 flex flex-col backdrop-blur-md bg-white/20">
         <div className="max-w-xl mx-auto w-full px-6 lg:px-8 py-8 lg:py-10 flex-1 flex flex-col justify-center">
           <button
             onClick={() => router.push('/')}
@@ -118,10 +125,6 @@ export default function QueuePage() {
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             Back to services
           </button>
-
-          <div className="mb-6 text-center align-center items-center justify-center">
-            <h1 className="text-3xl font-bold text-[#2C3639]">Your Queue Ticket</h1>
-          </div>
 
           <div className="space-y-8">
             <TicketCard ticket={ticket} />
@@ -153,7 +156,6 @@ export default function QueuePage() {
         </div>
       </div>
 
-      {/* Right Column: Waiting List - Scrollable */}
       <div className="flex-1 h-full lg:overflow-y-auto z-10">
         <div className="max-w-2xl mx-auto px-6 lg:px-12 py-10 lg:py-16">
           {serviceQueue.length > 0 ? (
@@ -165,12 +167,20 @@ export default function QueuePage() {
               <WaitingList tickets={serviceQueue} />
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center py-20">
-              <div className="w-20 h-20 bg-sage/10 rounded-3xl flex items-center justify-center text-sage mb-6">
-                <Activity size={40} strokeWidth={1.5} />
+            <div className="h-auto flex flex-col items-center justify-center text-center py-6">
+              <div className="cursor-pointer mb-10 w-64 h-64 lg:w-80 lg:h-80 relative opacity-90 transition-transform hover:scale-105 duration-500 hover:opacity-100">
+                <Image
+                  src="/images/queue-empty.png"
+                  alt="Queue is empty"
+                  fill
+                  className="object-contain mix-blend-multiply"
+                  priority
+                />
               </div>
-              <h3 className="text-2xl font-bold text-[#2C3639]">Queue is Empty</h3>
-              <p className="text-sage/50 max-w-xs mt-2">There are currently no other patients in the queue for this service.</p>
+              <h3 className="text-3xl lg:text-4xl font-black text-[#2C3639]">Queue is Empty</h3>
+              <p className="text-sage/60 max-w-sm mt-4 text-sm font-medium">
+                There are currently no other patients in the queue for this service.
+              </p>
             </div>
           )}
         </div>

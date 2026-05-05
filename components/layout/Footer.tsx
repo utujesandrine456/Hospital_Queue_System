@@ -1,6 +1,6 @@
 'use client'
 
-import { HeartPulse, Mail, Phone, MapPin, Globe, Share2, MessageSquare } from 'lucide-react'
+import { Mail, Phone, MapPin, Globe, Share2, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -17,7 +17,7 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-24">
                     <div className="space-y-8">
                         <Link href="/" className="flex items-center gap-4">
-                            <Image src="/images/logo.png" alt="MediQueue Logo" width={64} height={64} className="w-16 h-16 object-cover rounded-full shadow-2xl bg-white/10 border-2 border-sage/20 p-0.5" />
+                            <Image src="/images/logo-image.png" alt="MediQueue Logo" width={64} height={64} className="w-16 h-16 object-cover rounded-full shadow-2xl bg-white/10 border-2 border-sage/20 p-0.5" />
                             <span className="text-3xl font-black text-cream tracking-tight">MediQueue</span>
                         </Link>
                         <p className="text-sage/40 text-sm font-medium leading-relaxed">
@@ -37,7 +37,7 @@ export function Footer() {
                         <h4 className="text-lg font-bold italic">Departments</h4>
                         <nav className="flex flex-col gap-4">
                             {['Consultation', 'Laboratory', 'Pharmacy', 'Radiology'].map((item) => (
-                                <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage transition-colors">
+                                <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
                                     {item}
                                 </Link>
                             ))}
@@ -49,7 +49,7 @@ export function Footer() {
                         <h4 className="text-lg font-bold italic">Patient Care</h4>
                         <nav className="flex flex-col gap-4">
                             {['Virtual Queue', 'How it works', 'Offline Access', 'Terms of Care'].map((item) => (
-                                <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage transition-colors">
+                                <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
                                     {item}
                                 </Link>
                             ))}
@@ -59,24 +59,24 @@ export function Footer() {
                     {/* Contact */}
                     <div className="space-y-8">
                         <h4 className="text-lg font-bold italic">Get in touch</h4>
-                        <div className="space-y-4">
+                        <div className="space-y-4 overflow-hidden">
                             <div className="flex items-center gap-4 text-sage/40">
-                                <Phone size={18} />
-                                <span className="text-sm font-bold">+250 784 376 747</span>
+                                <Phone size={18} className="shrink-0" />
+                                <span className="text-sm font-bold truncate">+250 784 376 747</span>
                             </div>
                             <div className="flex items-center gap-4 text-sage/40">
-                                <Mail size={18} />
-                                <span className="text-sm font-bold">ingogatechnologies@gmail.com</span>
+                                <Mail size={18} className="shrink-0" />
+                                <span className="text-sm font-bold truncate">ingogatechnologies@gmail.com</span>
                             </div>
                             <div className="flex items-center gap-4 text-sage/40">
-                                <MapPin size={18} />
-                                <span className="text-sm font-bold leading-relaxed">Kigali, Rwanda</span>
+                                <MapPin size={18} className="shrink-0" />
+                                <span className="text-sm font-bold leading-relaxed truncate">Kigali, Rwanda</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-12 pt-6 border-t border-sage/5 flex flex-col md:flex-row justify-between items-center gap-6 text-center">
+                <div className="mt-12 pt-6 border-t text-center border-sage/5 flex flex-col md:flex-row justify-center items-center gap-6">
                     <p className="text-xs font-bold text-sage/20">
                         © 2026 MediQueue. Designed for the Future of Healthcare.
                     </p>

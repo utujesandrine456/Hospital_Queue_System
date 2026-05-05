@@ -139,7 +139,7 @@ export function ContactSection() {
                             className="flex items-center justify-center"
                         >
                             <div
-                                className="relative w-[340px] rounded-[4rem] border-12 border-white/5 bg-[#1F2629] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.6)]"
+                                className="relative w-[340px] rounded-[4rem] border-12 border-white/5 bg-[#1F2629]"
                             >
                                 <div className="absolute right-[-14px] top-32 w-[3px] h-16 rounded-l-full bg-white/10" />
                                 <div className="absolute left-[-14px] top-28 w-[3px] h-12 rounded-r-full bg-white/10" />
@@ -158,9 +158,9 @@ export function ContactSection() {
                                     </div>
 
                                     {/* Chat Header */}
-                                    <div className="flex items-center gap-4 px-8 py-5 bg-white border-b border-[#2C3639]/5 shadow-sm">
-                                        <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shrink-0 shadow-lg shadow-sage/20 border-2 border-sage/10 overflow-hidden">
-                                            <Image src="/images/logo.png" alt="MQ" width={56} height={56} className="w-full h-full object-cover" />
+                                    <div className="flex items-center gap-4 px-4 py-2 bg-white border-b border-[#2C3639]/5 shadow-sm">
+                                        <div className="w-14 h-14 rounded-fulflex items-center justify-center shrink-0 overflow-hidden">
+                                            <Image src="/images/logo-image.png" alt="MQ" width={56} height={56} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[16px] font-semibold text-[#2C3639]">MediQueue Care</p>

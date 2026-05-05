@@ -6,8 +6,7 @@ import Image from 'next/image'
 
 export function HeroSection() {
     return (
-        <section className="relative pt-16 pb-0 px-12 overflow-visible bg-[#F3EFE3]">
-            {/* Subtle hex pattern overlay */}
+        <section className="relative pt-6 pb-0 px-12 overflow-visible bg-[#F3EFE3]">
             <div
                 className="absolute inset-0 opacity-[0.06] pointer-events-none"
                 style={{
@@ -19,7 +18,6 @@ export function HeroSection() {
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-4 items-center mb-0">
 
-                    {/* Left Column */}
                     <div className="space-y-8 pr-0 lg:pr-8 pb-16">
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}

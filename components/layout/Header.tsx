@@ -25,16 +25,16 @@ export function Header() {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             className={cn(
-                'fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 py-4',
+                'fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 py-2',
                 isScrolled ? 'py-3' : 'py-6'
             )}
         >
             <div className={cn(
-                'max-w-7xl mx-auto rounded-full transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-3',
+                'max-w-7xl mx-auto rounded-full transition-all duration-500 border border-transparent flex items-center justify-between px-6',
                 isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-2xl shadow-sage/10 border-white/40' : 'bg-transparent'
             )}>
                 <Link href="/" className="flex items-center gap-3 group">
-                    <Image src="/images/logo.png" alt="MediQueue Logo" width={56} height={56} className="w-12 h-12 lg:w-14 lg:h-14 object-cover rounded-full shadow-lg border-2 border-white/50" priority />
+                    <Image src="/images/logo-image.png" alt="MediQueue Logo" width={56} height={56} className="w-12 h-12 lg:w-14 lg:h-14 object-cover rounded-full" priority />
                     <span className="text-2xl lg:text-3xl font-black text-sage tracking-tight">MediQueue</span>
                 </Link>
 

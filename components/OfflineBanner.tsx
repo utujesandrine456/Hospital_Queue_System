@@ -18,7 +18,7 @@ export function OfflineBanner() {
         'transition-all duration-300',
         !isOnline
           ? 'bg-sage/10 text-sage backdrop-blur-md border-b border-sage/10'
-          : 'bg-sage text-cream shadow-lg'
+          : ''
       )}
     >
       {!isOnline ? (
@@ -30,8 +30,6 @@ export function OfflineBanner() {
         </>
       ) : (
         <>
-          <span className="inline-block w-2 h-2 rounded-full bg-white/60 animate-pulse" />
-          <span>Syncing {pendingSync.length} pending action{pendingSync.length !== 1 ? 's' : ''}...</span>
         </>
       )}
     </div>

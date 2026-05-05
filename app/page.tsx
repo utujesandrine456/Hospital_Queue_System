@@ -27,13 +27,13 @@ export default function HomePage() {
   if (!mounted) return null
 
   return (
-    <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-20">
+    <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-24">
       <Header />
 
       <div className="relative z-10">
         <HeroSection />
 
-        <section id="services" className="relative py-32 px-6">
+        <section id="services" className="relative py-24 px-6">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 50 }}

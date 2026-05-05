@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Sen } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 const sen = Sen({
   variable: "--font-sen",
@@ -8,11 +10,21 @@ const sen = Sen({
 });
 
 export const metadata: Metadata = {
-  title: "Hospital Smart Queue System",
-  description: "Offline-first professional patient management and queue tracking system.",
+  title: "MediQueue",
+  description: "Skip the physical line — take your queue ticket digitally and track your position in real-time.",
   manifest: "/manifest.json",
   themeColor: "#769382",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  icons: {
+    icon: '/logo-image.png',
+    apple: '/logo-image.png',
+    shortcut: "/logo-image.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'MediQueue',
+  },
 };
 
 export default function RootLayout({
@@ -25,7 +37,25 @@ export default function RootLayout({
       lang="en"
       className={`${sen.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body className="min-h-full flex flex-col">
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              background: '#1e293b',
+              border: '1px solid #334155',
+              color: '#f1f5f9',
+            },
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

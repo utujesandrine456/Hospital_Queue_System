@@ -34,7 +34,6 @@ export function ServiceSelector() {
   const [patientName, setPatientName] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
 
-  // Detect if the user has an active (non-completed) ticket for the selected service
   const hasActiveTicket =
     myTicket &&
     myTicket.status !== 'completed' &&
