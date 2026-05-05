@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/Footer'
 import { HeroSection } from '@/components/home/HeroSection'
 import { ContactSection } from '@/components/home/ContactSection'
 import { motion, useScroll, useSpring } from 'framer-motion'
+import { FullScreenLoader } from '@/components/ui/Loader'
 
 export default function HomePage() {
   useNetworkStatus()
@@ -19,12 +20,17 @@ export default function HomePage() {
   })
 
   const [mounted, setMounted] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
     setMounted(true)
+    const timer = setTimeout(() => {
+      setShowSplash(false)
+    }, 1800)
+    return () => clearTimeout(timer)
   }, [])
 
-  if (!mounted) return null
+  if (!mounted || showSplash) return <FullScreenLoader text="Preparing your experience..." />
 
   return (
     <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-24">
@@ -56,7 +62,7 @@ export default function HomePage() {
         </section>
 
         <ContactSection />
-      </div>  
+      </div>
 
       <Footer />
     </main>

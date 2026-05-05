@@ -12,6 +12,7 @@ import { WaitingList } from '@/components/queue/WaitingList'
 import { Activity, Ticket, ArrowLeft } from 'lucide-react'
 import type { QueueTicket } from '@/types'
 import Image from 'next/image'
+import { FullScreenLoader } from '@/components/ui/Loader'
 
 export default function QueuePage() {
   const params = useParams()
@@ -63,14 +64,7 @@ export default function QueuePage() {
     : []
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-sage/20 border-t-sage rounded-full animate-spin mx-auto" />
-          <p className="text-sage/60 font-bold text-sm">Loading your ticket...</p>
-        </div>
-      </main>
-    )
+    return <FullScreenLoader text="Validating Ticket Details..." />
   }
 
   if (!ticket) {
