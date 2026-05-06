@@ -13,11 +13,13 @@ import { Activity, Ticket, ArrowLeft } from 'lucide-react'
 import type { QueueTicket } from '@/types'
 import Image from 'next/image'
 import { FullScreenLoader } from '@/components/ui/Loader'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function QueuePage() {
   const params = useParams()
   const router = useRouter()
   const ticketId = params.ticketId as string
+  const { t } = useLanguage()
 
   const { allTickets, myTicket, loadFromStorage } = useQueueStore()
   const [ticket, setTicket] = useState<QueueTicket | null>(null)
@@ -64,7 +66,7 @@ export default function QueuePage() {
     : []
 
   if (isLoading) {
-    return <FullScreenLoader text="Validating Ticket Details..." />
+    return <FullScreenLoader text={t('validatingTicket')} />
   }
 
   if (!ticket) {
@@ -75,9 +77,9 @@ export default function QueuePage() {
             <Ticket size={48} strokeWidth={1.5} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-[#2C3639]">Ticket not found</h2>
+            <h2 className="text-2xl font-bold text-[#2C3639]">{t('ticketNotFound')}</h2>
             <p className="text-sage/60 font-medium">
-              This ticket doesn&apos;t exist or may have expired.
+              {t('ticketExpired')}
             </p>
           </div>
           <button
@@ -85,7 +87,7 @@ export default function QueuePage() {
             className="w-full py-4 text-sage rounded-lg hover:text-sage/80 font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <Ticket size={18} />
-            Get another ticket
+            {t('getAnotherTicket')}
           </button>
         </div>
       </main>
@@ -117,7 +119,7 @@ export default function QueuePage() {
             className="flex items-center gap-2 text-sage/50 hover:text-sage text-sm font-bold mb-10 transition-colors group cursor-pointer"
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Back to services
+            {t('backToServices')}
           </button>
 
           <div className="space-y-8">
@@ -132,7 +134,7 @@ export default function QueuePage() {
                 className="w-full py-5 bg-sage hover:bg-sage/90 text-cream rounded-2xl font-bold text-xl transition-all shadow-xl shadow-sage/20 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <Ticket size={24} strokeWidth={2.5} />
-                Get a New Ticket
+                {t('getNewTicket')}
               </button>
             </div>
           )}
@@ -142,7 +144,7 @@ export default function QueuePage() {
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sage/5 border border-sage/10">
                 <span className="w-2 h-2 rounded-full bg-sage animate-ping" />
                 <span className="text-[9px] font-bold text-sage">
-                  Auto-syncing
+                  {t('autoSyncing')}
                 </span>
               </div>
             </div>
@@ -155,8 +157,8 @@ export default function QueuePage() {
           {serviceQueue.length > 0 ? (
             <div className="space-y-10">
               <div>
-                <h2 className="text-4xl font-bold text-[#2C3639]">Live Waiting List</h2>
-                <p className="text-sage/60 font-medium mt-2">Real-time status of all patients in this department</p>
+                <h2 className="text-4xl font-bold text-[#2C3639]">{t('liveWaitingList')}</h2>
+                <p className="text-sage/60 font-medium mt-2">{t('realTimeStatus')}</p>
               </div>
               <WaitingList tickets={serviceQueue} />
             </div>
@@ -171,9 +173,9 @@ export default function QueuePage() {
                   priority
                 />
               </div>
-              <h3 className="text-3xl lg:text-4xl font-black text-[#2C3639]">Queue is Empty</h3>
+              <h3 className="text-3xl lg:text-4xl font-black text-[#2C3639]">{t('queueEmpty')}</h3>
               <p className="text-sage/60 max-w-sm mt-4 text-sm font-medium">
-                There are currently no other patients in the queue for this service.
+                {t('noPatientsInQueue')}
               </p>
             </div>
           )}

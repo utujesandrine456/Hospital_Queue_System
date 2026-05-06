@@ -7,11 +7,14 @@ import { Menu, X } from 'lucide-react'
 import { useNetworkStore } from '@/store/networkStore'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { LanguageSwitcher } from './LanguageSwitcher'
+import { useLanguage } from '@/context/LanguageContext'
 export function Header() {
     const { isOnline } = useNetworkStore()
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const { t } = useLanguage()
 
     useEffect(() => {
         setMounted(true)
@@ -39,26 +42,28 @@ export function Header() {
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-8">
-                    {['Home', 'Services', 'About', 'Contact'].map((item) => (
+                <nav className="hidden md:flex items-center gap-6">
+                    {['home', 'services', 'about', 'contact'].map((item) => (
                         <Link
                             key={item}
-                            href={`#${item.toLowerCase() === 'home' ? '' : item.toLowerCase()}`}
+                            href={`#${item === 'home' ? '' : item}`}
                             onClick={(e) => {
                                 e.preventDefault();
-                                const targetId = item.toLowerCase() === 'home' ? 'hero' : item.toLowerCase();
+                                const targetId = item === 'home' ? 'hero' : item;
                                 const element = document.getElementById(targetId) || (targetId === 'hero' ? document.body : null);
                                 if (element) {
                                     const y = element.getBoundingClientRect().top + window.scrollY - 100;
                                     window.scrollTo({ top: targetId === 'hero' ? 0 : y, behavior: 'smooth' });
                                 }
                             }}
-                            className="group relative text-sm font-bold text-[#2C3639]/70 hover:text-sage transition-colors py-1"
+                            className="group relative text-sm font-bold text-[#2C3639]/70 hover:text-sage transition-colors py-1 capitalize"
                         >
-                            {item}
+                            {t(item)}
                             <span className="absolute bottom-0 left-1/2 w-full h-[4px] rounded-full bg-sage origin-center -translate-x-1/2 scale-x-0 group-hover:scale-x-60 transition-transform duration-300 ease-out" />
                         </Link>
                     ))}
+
+                    <LanguageSwitcher />
 
                     <div className="h-6 w-px bg-sage/10 ml-2" />
 
@@ -68,7 +73,7 @@ export function Header() {
                             (mounted && isOnline) ? "bg-sage shadow-sage/40" : "bg-red-400 animate-pulse"
                         )} />
                         <span className="text-sm font-bold text-[#2C3639]/60">
-                            {(mounted && isOnline) ? 'System Online' : 'System Offline'}
+                            {(mounted && isOnline) ? t('systemOnline') : t('systemOffline')}
                         </span>
                     </div>
                 </nav>
@@ -90,23 +95,26 @@ export function Header() {
                         className="absolute top-full left-6 right-6 mt-4 p-6 bg-white/95 backdrop-blur-2xl rounded-4xl border border-white shadow-2xl md:hidden"
                     >
                         <div className="flex flex-col gap-6">
-                            {['Home', 'Services', 'About', 'Contact'].map((item) => (
+                            <div className="flex justify-end mb-2">
+                                <LanguageSwitcher />
+                            </div>
+                            {['home', 'services', 'about', 'contact'].map((item) => (
                                 <Link
                                     key={item}
-                                    href={`#${item.toLowerCase() === 'home' ? '' : item.toLowerCase()}`}
+                                    href={`#${item === 'home' ? '' : item}`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         setIsMobileMenuOpen(false);
-                                        const targetId = item.toLowerCase() === 'home' ? 'hero' : item.toLowerCase();
+                                        const targetId = item === 'home' ? 'hero' : item;
                                         const element = document.getElementById(targetId) || (targetId === 'hero' ? document.body : null);
                                         if (element) {
                                             const y = element.getBoundingClientRect().top + window.scrollY - 100;
                                             window.scrollTo({ top: targetId === 'hero' ? 0 : y, behavior: 'smooth' });
                                         }
                                     }}
-                                    className="text-2xl font-bold text-[#2C3639] hover:text-sage transition-colors"
+                                    className="text-2xl font-bold text-[#2C3639] hover:text-sage transition-colors capitalize"
                                 >
-                                    {item}
+                                    {t(item)}
                                 </Link>
                             ))}
                         </div>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Sen } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { OfflineBanner } from "@/components/OfflineBanner";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const sen = Sen({
   variable: "--font-sen",
@@ -54,7 +54,9 @@ export default function RootLayout({
             },
           }}
         />
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

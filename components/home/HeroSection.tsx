@@ -3,8 +3,10 @@
 import { motion } from 'framer-motion'
 import { Play, Search } from 'lucide-react'
 import Image from 'next/image'
+import { useLanguage } from '@/context/LanguageContext'
 
 export function HeroSection() {
+    const { t } = useLanguage()
     return (
         <section className="relative pt-6 pb-0 px-12 overflow-visible bg-[#F3EFE3]">
             <div
@@ -15,7 +17,7 @@ export function HeroSection() {
                 }}
             />
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-4 items-center mb-0">
 
                     <div className="space-y-8 pr-0 lg:pr-8 pb-16">
@@ -25,7 +27,7 @@ export function HeroSection() {
                             transition={{ duration: 0.8, ease: "circOut" }}
                             className="text-4xl lg:text-7xl font-bold text-[#2C3639]"
                         >
-                            No More Waiting in Line
+                            {t('heroTitle1')}
                         </motion.h1>
 
                         <motion.p
@@ -34,7 +36,7 @@ export function HeroSection() {
                             transition={{ duration: 0.8, delay: 0.1, ease: "circOut" }}
                             className="text-lg text-[#2C3639]/60 font-medium max-w-xl leading-relaxed"
                         >
-                            Get a ticket. Sit down. We tell you when the doctor is ready for you. No more standing in line.
+                            {t('heroDescription')}
                         </motion.p>
 
                         <motion.div
@@ -44,7 +46,7 @@ export function HeroSection() {
                         >
                             <a href='#services'>
                                 <button className="cursor-pointer flex items-center gap-4 bg-sage hover:bg-sage/80 transition-all duration-300 text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-[#769382]/20 group hover:shadow-[#2C3639]/20 hover:scale-[1.02]">
-                                    View Our Services
+                                    {t('services')}
                                     <div className="w-8 h-8 rounded-full bg-white text-sage flex items-center justify-center group-hover:text-sage/80 transition-colors shrink-0">
                                         <Play size={14} fill="currentColor" className="ml-0.5" />
                                     </div>
@@ -60,9 +62,9 @@ export function HeroSection() {
                             className="grid grid-cols-3 gap-4 pt-6 border-t border-[#769382]/15"
                         >
                             {[
-                                { value: '27+', label: 'Happy Patients' },
-                                { value: '4+', label: 'Services' },
-                                { value: '10+', label: 'Doctors' },
+                                { value: '27+', label: t('happyPatients') },
+                                { value: '4+', label: t('services') },
+                                { value: '10+', label: t('doctors') },
                             ].map((stat) => (
                                 <div key={stat.label} className="cursor-pointer flex flex-col group">
                                     <span className="text-3xl font-bold text-[#2C3639] group-hover:text-[#769382] transition-colors">

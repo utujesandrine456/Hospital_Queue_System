@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Phone, Send, CheckCheck, Activity } from 'lucide-react'
 import Image from 'next/image'
+import { useLanguage } from '@/context/LanguageContext'
 
 interface Message {
     id: number
@@ -12,34 +13,37 @@ interface Message {
     time: string
 }
 
-const INITIAL_MESSAGES: Message[] = [
-    {
-        id: 1,
-        text: "Hello! Welcome to MediQueue Support. How can we help you today?",
-        from: 'support',
-        time: '09:00 AM',
-    },
-]
 
-const AUTO_REPLIES = [
-    "Thank you for reaching out. Our medical support team will respond shortly.",
-    "We've received your message. A care specialist will be with you soon.",
-    "Your message has been noted. We'll get back to you within a few minutes.",
-]
 
 function getTime() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function getAutoReply() {
-    return AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]
-}
+
 
 export function ContactSection() {
-    const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
+    const { t } = useLanguage()
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: 1,
+            text: t('chatWelcome'),
+            from: 'support',
+            time: '09:00 AM',
+        }
+    ])
     const [input, setInput] = useState('')
     const [isTyping, setIsTyping] = useState(false)
     const bottomRef = useRef<HTMLDivElement>(null)
+
+    const AUTO_REPLIES = [
+        t('chatAuto1'),
+        t('chatAuto2'),
+        t('chatAuto3'),
+    ]
+
+    function getAutoReply() {
+        return AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]
+    }
 
     useEffect(() => {
         if (messages.length > 1 || isTyping) {
@@ -88,11 +92,11 @@ export function ContactSection() {
                         >
                             <div>
                                 <h2 className="text-5xl lg:text-6xl font-bold text-cream leading-none tracking-tight">
-                                    Let&apos;s talk about <br />
-                                    <span className="text-sage italic">Your Care.</span>
+                                    {t('contactTitle1')} <br />
+                                    <span className="text-sage italic">{t('contactTitle2')}</span>
                                 </h2>
                                 <p className="mt-8 text-lg text-cream/60 max-w-lg font-medium leading-relaxed">
-                                    Have questions about our queue system? Our medical team is available 24/7 to provide seamless support for your facility.
+                                    {t('contactDesc')}
                                 </p>
                             </div>
 
@@ -100,15 +104,15 @@ export function ContactSection() {
                                 {[
                                     {
                                         icon: <Mail size={22} />,
-                                        label: 'Email Support',
+                                        label: t('emailSupport'),
                                         value: 'ingogatechnologies@gmail.com',
-                                        detail: 'Quickest for general inquiries',
+                                        detail: t('emailDesc'),
                                     },
                                     {
                                         icon: <Phone size={22} />,
-                                        label: 'Phone Call',
+                                        label: t('phoneCall'),
                                         value: '+250 784 376 747',
-                                        detail: 'Emergency & technical support',
+                                        detail: t('phoneDesc'),
                                     },
                                 ].map((item, i) => (
                                     <motion.div
@@ -168,7 +172,7 @@ export function ContactSection() {
                                             <p className="text-[16px] font-semibold text-[#2C3639]">MediQueue Care</p>
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <span className="w-2 h-2 rounded-full bg-sage animate-pulse shadow-[0_0_8px_#769382]" />
-                                                <span className="text-[12px] text-sage font-medium px-1">Live Help</span>
+                                                <span className="text-[12px] text-sage font-medium px-1">{t('liveHelp')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -235,7 +239,7 @@ export function ContactSection() {
                                                 value={input}
                                                 onChange={e => setInput(e.target.value)}
                                                 onKeyDown={handleKey}
-                                                placeholder="Message..."
+                                                placeholder={t('typeMessage')}
                                                 className="flex-1 bg-transparent text-[13px] text-[#2C3639] placeholder:text-[#2C3639]/20 outline-none font-medium"
                                             />
                                             <motion.button

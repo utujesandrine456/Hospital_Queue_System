@@ -9,9 +9,11 @@ import { HeroSection } from '@/components/home/HeroSection'
 import { ContactSection } from '@/components/home/ContactSection'
 import { motion, useScroll, useSpring } from 'framer-motion'
 import { FullScreenLoader } from '@/components/ui/Loader'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function HomePage() {
   useNetworkStatus()
+  const { t } = useLanguage()
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -30,7 +32,7 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
-  if (!mounted || showSplash) return <FullScreenLoader text="Preparing your experience..." />
+  if (!mounted || showSplash) return <FullScreenLoader text={t('preparingExp')} />
 
   return (
     <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-24">
@@ -54,9 +56,9 @@ export default function HomePage() {
 
         <section id="about" className="py-32 bg-white/40">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <h2 className="text-4xl lg:text-6xl font-bold text-[#2C3639] mb-8">Redefining Patient Care.</h2>
+            <h2 className="text-4xl lg:text-6xl font-bold text-[#2C3639] mb-8">{t('aboutTitle')}</h2>
             <p className="text-lg text-[#2C3639]/60 font-medium max-w-2xl mx-auto leading-relaxed">
-              Our system combines advanced queue deterministic algorithms with an intuitive interface to ensure you never lose your spot, even when offline.
+              {t('aboutDesc')}
             </p>
           </div>
         </section>

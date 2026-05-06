@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQueueStore } from '@/store/queueStore'
 import { useState } from 'react'
+import { useLanguage } from '@/context/LanguageContext'
 import { cn } from '@/lib/utils'
 import {
   Loader2,
@@ -29,6 +30,7 @@ const ICON_MAP = {
 
 export function ServiceSelector() {
   const router = useRouter()
+  const { t } = useLanguage()
   const { createTicket, myTicket } = useQueueStore()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [patientName, setPatientName] = useState('')
@@ -62,10 +64,10 @@ export function ServiceSelector() {
     <div className="space-y-8">
       <div className="text-center space-y-2 mb-8">
         <h2 className="text-5xl lg:text-6xl font-bold text-[#2C3639] leading-tight">
-          How can we <span className="text-sage italic">Help you today?</span>
+          {t('selectServiceTitle')}
         </h2>
         <p className="text-md text-sage/60 font-medium max-w-2xl mx-auto italic">
-          Select a clinical department to join the priority queue.
+          {t('selectServiceSubtitle')}
         </p>
       </div>
 
@@ -106,7 +108,7 @@ export function ServiceSelector() {
               {cardHasActiveTicket && (
                 <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-cream border border-sage/20 rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-sage animate-pulse" />
-                  <span className="text-[10px] font-bold text-sage uppercase tracking-widest">Active</span>
+                  <span className="text-[10px] font-bold text-sage uppercase tracking-widest">{t('activeStatus')}</span>
                 </div>
               )}
 
@@ -127,7 +129,7 @@ export function ServiceSelector() {
                       isSelected ? 'text-cream' : 'text-[#2C3639]'
                     )}
                   >
-                    {category.label}
+                    {t(`${category.type}Title`)}
                   </h3>
                   <p
                     className={cn(
@@ -135,7 +137,7 @@ export function ServiceSelector() {
                       isSelected ? 'text-cream/70' : 'text-sage/60'
                     )}
                   >
-                    {category.description}
+                    {t(`${category.type}Desc`)}
                   </p>
                 </div>
 
@@ -147,7 +149,7 @@ export function ServiceSelector() {
                       : 'text-sage opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'
                   )}
                 >
-                  {isSelected ? 'Department Selected' : 'Select Department'}
+                  {isSelected ? t('deptSelected') : t('selectDept')}
                   <ArrowRight size={14} />
                 </div>
               </div>
@@ -175,9 +177,9 @@ export function ServiceSelector() {
                     <Ticket size={20} className="text-cream" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-cream/70 uppercase tracking-widest">You have an active ticket</p>
+                    <p className="text-xs font-bold text-cream/70 uppercase tracking-widest">{t('activeTicketNotice')}</p>
                     <p className="text-base font-bold text-cream">
-                      {SERVICE_CONFIG[selectedId as keyof typeof SERVICE_CONFIG]?.label}
+                      {t(`${selectedId}Title`)}
                     </p>
                   </div>
                 </div>
@@ -187,21 +189,21 @@ export function ServiceSelector() {
                   <div className="flex items-start gap-3 p-4 rounded-2xl bg-cream border border-sage/10">
                     <AlertCircle size={18} className="text-sage shrink-0 mt-0.5" />
                     <p className="text-sm text-[#2C3639]/70 font-medium leading-relaxed">
-                      You already have an active ticket{' '}
+                      {t('activeTicketDesc1')}{' '}
                       <span className="font-bold text-[#2C3639]">#{myTicket!.id.slice(-6).toUpperCase()}</span>{' '}
-                      in this department. You cannot open a new one while your current ticket is still active.
+                      {t('activeTicketDesc2')}
                     </p>
                   </div>
 
                   {/* Ticket meta */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-xl bg-cream/60 border border-sage/10 text-center">
-                      <p className="text-xs text-sage/50 font-semibold uppercase tracking-wider mb-1">Position</p>
+                      <p className="text-xs text-sage/50 font-semibold uppercase tracking-wider mb-1">{t('positionText')}</p>
                       <p className="text-2xl font-bold text-[#2C3639]">#{myTicket!.position}</p>
                     </div>
                     <div className="p-3 rounded-xl bg-cream/60 border border-sage/10 text-center">
-                      <p className="text-xs text-sage/50 font-semibold uppercase tracking-wider mb-1">Status</p>
-                      <p className="text-sm font-bold text-sage capitalize">{myTicket!.status}</p>
+                      <p className="text-xs text-sage/50 font-semibold uppercase tracking-wider mb-1">{t('statusText')}</p>
+                      <p className="text-sm font-bold text-sage capitalize">{myTicket!.status === 'waiting' ? t('waiting') : t('nowServing')}</p>
                     </div>
                   </div>
 
@@ -210,7 +212,7 @@ export function ServiceSelector() {
                     className="cursor-pointer w-full group flex items-center justify-center gap-3 px-8 py-4 bg-[#2C3639] text-cream rounded-xl font-bold text-base transition-all hover:bg-sage active:scale-[0.98] shadow-xl"
                   >
                     <ExternalLink size={18} className="group-hover:scale-110 transition-transform" />
-                    View My Ticket
+                    {t('viewMyTicket')}
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -220,7 +222,7 @@ export function ServiceSelector() {
               <div className="bg-white p-6 sm:p-8 rounded-4xl border border-sage/10 shadow-2xl shadow-sage/5 space-y-6">
                 <div className="space-y-3">
                   <label htmlFor="patientName" className="block text-sm font-bold text-[#2C3639]">
-                    Patient Full Name
+                    {t('patientFullName')}
                   </label>
                   <input
                     id="patientName"
@@ -228,7 +230,7 @@ export function ServiceSelector() {
                     value={patientName}
                     onChange={e => setPatientName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleGenerateTicket()}
-                    placeholder="e.g. John Doe"
+                    placeholder={t('patientNamePlaceholder')}
                     className="w-full px-5 py-4  rounded-lg bg-[#ffffff] text-[#2C3639] border border-sage/60 focus:border-sage focus:ring-4 focus:ring-sage/10 outline-none transition-all font-medium placeholder:text-sage/40"
                     autoFocus
                   />
@@ -246,13 +248,13 @@ export function ServiceSelector() {
                       <>
                         <div className="cursor-pointer flex items-center gap-2">
                           <Loader2 className="animate-spin" size={24} />
-                          <span>Preparing Care...</span>
+                          <span>{t('takingTicketBtn')}</span>
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="cursor-pointer flex items-center gap-2">
-                          <span>Generate Ticket</span>
+                          <span>{t('takeTicketTitle')}</span>
                           <ArrowRight className="cursor-pointer group-hover:translate-x-1 transition-transform" size={20} />
                         </div>
                       </>

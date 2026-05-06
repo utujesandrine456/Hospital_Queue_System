@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { SERVICE_CONFIG } from '@/lib/queue/engine'
+import { useLanguage } from '@/context/LanguageContext'
 
 const ICON_MAP = {
   consultation: Stethoscope,
@@ -27,6 +28,7 @@ interface TicketCardProps {
 }
 
 export function TicketCard({ ticket }: TicketCardProps) {
+  const { t } = useLanguage()
   const isServing = ticket.status === 'serving'
   const serviceConfig = SERVICE_CONFIG[ticket.serviceType]
   const Icon = ICON_MAP[ticket.serviceType as keyof typeof ICON_MAP] || Activity
@@ -67,7 +69,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
               </div>
               <div>
                 <p className="text-white font-bold text-[15px] leading-tight tracking-wide">MediQueue</p>
-                <p className="text-white/60 text-[12px] font-medium">Smart Health</p>
+                <p className="text-white/60 text-[12px] font-medium">{t('smartHealth')}</p>
               </div>
             </div>
             {/* Status badge */}
@@ -79,13 +81,13 @@ export function TicketCard({ ticket }: TicketCardProps) {
                 "w-1.5 h-1.5 rounded-full",
                 isServing ? "bg-emerald-300 animate-pulse" : ticket.status === 'waiting' ? "bg-amber-300" : "bg-white/40"
               )} />
-              <span>{isServing ? "Now Serving" : ticket.status === 'waiting' ? "Waiting" : "Completed"}</span>
+              <span>{isServing ? t('nowServing') : ticket.status === 'waiting' ? t('waiting') : t('completed')}</span>
             </div>
           </div>
 
           {/* Big ticket number */}
           <div className="relative text-center">
-            <p className="text-white/40 text-[12px] font-semibold mb-1">Ticket Number</p>
+            <p className="text-white/40 text-[12px] font-semibold mb-1">{t('ticketNumber')}</p>
             <h2 className="text-7xl font-bold text-white leading-none">
               #{ticket.ticketNumber}
             </h2>
@@ -95,7 +97,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
                 transition={{ repeat: Infinity, duration: 2 }}
                 className="mt-3 text-xs font-bold text-emerald-300"
               >
-                ● Your turn — please proceed
+                {t('yourTurn')}
               </motion.div>
             )}
           </div>
@@ -120,15 +122,15 @@ export function TicketCard({ ticket }: TicketCardProps) {
               <Icon size={20} strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-sage/50">Department</p>
-              <p className="text-sm font-bold text-[#2C3639]">{serviceConfig?.label || 'General'}</p>
+              <p className="text-[10px] font-bold text-sage/50">{t('department')}</p>
+              <p className="text-sm font-bold text-[#2C3639]">{serviceConfig?.label ? t(`${ticket.serviceType}Title`) : 'General'}</p>
             </div>
           </div>
 
           {/* Patient name if not anonymous */}
           {ticket.patientName && ticket.patientName !== 'Anonymous' && (
             <div>
-              <p className="text-[10px] font-bold text-sage/50">Patient</p>
+              <p className="text-[10px] font-bold text-sage/50">{t('patient')}</p>
               <p className="text-sm font-bold text-[#2C3639]">{ticket.patientName}</p>
             </div>
           )}
@@ -136,16 +138,16 @@ export function TicketCard({ ticket }: TicketCardProps) {
           {/* Info grid */}
           <div className="grid grid-cols-3 gap-4 pt-1 border-t border-sage/10">
             <div>
-              <p className="text-[10px] font-bold text-sage/50">Issued</p>
+              <p className="text-[10px] font-bold text-sage/50">{t('issued')}</p>
               <p className="text-xs font-bold text-[#2C3639]">{issuedTime}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-sage/50">Date</p>
+              <p className="text-[10px] font-bold text-sage/50">{t('dateLabel')}</p>
               <p className="text-xs font-bold text-[#2C3639]">{issuedDate}</p>
             </div>
             <div>
               <p className="text-[10px] font-bold text-sage/50 flex items-center gap-1">
-                <Clock size={9} /> Est. Wait
+                <Clock size={9} /> {t('estWait')}
               </p>
               <p className={cn("text-xs font-bold", isServing ? "text-sage" : "text-[#2C3639]")}>
                 {isServing ? "Now!" : `${ticket.estimatedWaitMinutes} min`}
@@ -159,11 +161,11 @@ export function TicketCard({ ticket }: TicketCardProps) {
               "flex items-center justify-between px-4 py-2 rounded-2xl border",
               statusStyle.bg, statusStyle.border
             )}>
-              <span className={cn("text-xs font-bold", statusStyle.text)}>Queue Position</span>
+              <span className={cn("text-xs font-bold", statusStyle.text)}>{t('queuePosition')}</span>
               <div className="flex items-center gap-1.5">
                 <span className={cn("w-2 h-2 rounded-full", statusStyle.dot, isServing && "animate-pulse")} />
                 <span className={cn("text-base font-bold", statusStyle.text)}>
-                  {isServing ? "You're up!" : `#${ticket.position}`}
+                  {isServing ? t('youAreUp') : `#${ticket.position}`}
                 </span>
               </div>
             </div>
@@ -174,7 +176,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
               href="/#services"
               className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-lg bg-sage/10 text-[#2C3639] border border-sage/20 text-sm font-bold hover:bg-[#2C3639] hover:text-white transition-all duration-300"
             >
-              Get a New Ticket
+              {t('getNewTicket')}
             </Link>
           )}
         </div>

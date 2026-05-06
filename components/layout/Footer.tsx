@@ -3,8 +3,10 @@
 import { Mail, Phone, MapPin, Globe, Share2, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useLanguage } from '@/context/LanguageContext'
 
 export function Footer() {
+    const { t } = useLanguage()
     return (
         <footer className="relative bg-[#2C3639] text-cream mt-32">
             <div className="absolute top-0 left-0 right-0 -translate-y-full overflow-hidden leading-none rotate-180">
@@ -21,7 +23,7 @@ export function Footer() {
                             <span className="text-3xl font-black text-cream tracking-tight">MediQueue</span>
                         </Link>
                         <p className="text-sage/40 text-sm font-medium leading-relaxed">
-                            Transforming patient experiences through intelligent technology and compassionate care. Offline-first and always synced.
+                            {t('footerDesc')}
                         </p>
                         <div className="flex items-center gap-5">
                             {[Globe, Share2, MessageSquare].map((Icon, i) => (
@@ -34,11 +36,11 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div className="space-y-8">
-                        <h4 className="text-lg font-bold italic">Departments</h4>
+                        <h4 className="text-lg font-bold italic">{t('departmentsTitle')}</h4>
                         <nav className="flex flex-col gap-4">
-                            {['Consultation', 'Laboratory', 'Pharmacy', 'Radiology'].map((item) => (
+                            {['opd', 'laboratory', 'pharmacy', 'radiology'].map((item) => (
                                 <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
-                                    {item}
+                                    {t(item + 'Title') || item}
                                 </Link>
                             ))}
                         </nav>
@@ -46,9 +48,9 @@ export function Footer() {
 
                     {/* Support */}
                     <div className="space-y-8">
-                        <h4 className="text-lg font-bold italic">Patient Care</h4>
+                        <h4 className="text-lg font-bold italic">{t('patientCareTitle')}</h4>
                         <nav className="flex flex-col gap-4">
-                            {['Virtual Queue', 'How it works', 'Offline Access', 'Terms of Care'].map((item) => (
+                            {[t('virtualQueue'), t('howItWorks'), t('offlineAccess'), t('termsOfCare')].map((item) => (
                                 <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
                                     {item}
                                 </Link>
@@ -58,7 +60,7 @@ export function Footer() {
 
                     {/* Contact */}
                     <div className="space-y-8">
-                        <h4 className="text-lg font-bold italic">Get in touch</h4>
+                        <h4 className="text-lg font-bold italic">{t('getInTouchTitle')}</h4>
                         <div className="space-y-4 overflow-hidden">
                             <div className="flex items-center gap-4 text-sage/40">
                                 <Phone size={18} className="shrink-0" />
@@ -70,7 +72,7 @@ export function Footer() {
                             </div>
                             <div className="flex items-center gap-4 text-sage/40">
                                 <MapPin size={18} className="shrink-0" />
-                                <span className="text-sm font-bold leading-relaxed truncate">Kigali, Rwanda</span>
+                                <span className="text-sm font-bold leading-relaxed truncate">{t('kigaliRwanda')}</span>
                             </div>
                         </div>
                     </div>
@@ -78,7 +80,7 @@ export function Footer() {
 
                 <div className="mt-12 pt-6 border-t text-center border-sage/5 flex flex-col md:flex-row justify-center items-center gap-6">
                     <p className="text-xs font-bold text-sage/20">
-                        © 2026 MediQueue. Designed for the Future of Healthcare.
+                        {t('copyrightText')}
                     </p>
                 </div>
             </div>
