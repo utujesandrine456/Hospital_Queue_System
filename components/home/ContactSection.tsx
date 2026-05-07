@@ -33,7 +33,7 @@ export function ContactSection() {
     ])
     const [input, setInput] = useState('')
     const [isTyping, setIsTyping] = useState(false)
-    const bottomRef = useRef<HTMLDivElement>(null)
+    const scrollContainerRef = useRef<HTMLDivElement>(null)
 
     const AUTO_REPLIES = [
         t('chatAuto1'),
@@ -46,8 +46,11 @@ export function ContactSection() {
     }
 
     useEffect(() => {
-        if (messages.length > 1 || isTyping) {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({
+                top: scrollContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+            })
         }
     }, [messages, isTyping])
 
@@ -178,7 +181,7 @@ export function ContactSection() {
                                     </div>
 
                                     {/* Messages Area */}
-                                    <div className="h-[320px] overflow-y-auto px-6 py-8 space-y-6 bg-cream scrollbar-none">
+                                    <div ref={scrollContainerRef} className="h-[320px] overflow-y-auto px-6 py-8 space-y-6 bg-cream scrollbar-none">
                                         <AnimatePresence initial={false}>
                                             {messages.map(msg => (
                                                 <motion.div
@@ -228,7 +231,6 @@ export function ContactSection() {
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
-                                        <div ref={bottomRef} />
                                     </div>
 
                                     {/* Input Bar */}
