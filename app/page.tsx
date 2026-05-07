@@ -10,6 +10,7 @@ import { ContactSection } from '@/components/home/ContactSection'
 import { motion, useScroll, useSpring } from 'framer-motion'
 import { FullScreenLoader } from '@/components/ui/Loader'
 import { useLanguage } from '@/context/LanguageContext'
+import { useQueueStore } from '@/store/queueStore'
 
 export default function HomePage() {
   useNetworkStatus()
@@ -21,16 +22,18 @@ export default function HomePage() {
     restDelta: 0.001
   })
 
+  const { loadFromStorage } = useQueueStore()
   const [mounted, setMounted] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
     setMounted(true)
+    loadFromStorage() // Ensure queue state is fresh
     const timer = setTimeout(() => {
       setShowSplash(false)
     }, 1800)
     return () => clearTimeout(timer)
-  }, [])
+  }, [loadFromStorage])
 
   if (!mounted || showSplash) return <FullScreenLoader text={t('preparingExp')} />
 

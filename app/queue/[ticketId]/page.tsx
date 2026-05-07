@@ -32,6 +32,8 @@ export default function QueuePage() {
     const loadTicket = async () => {
       setIsLoading(true)
       try {
+        await loadFromStorage()
+
         const fromStore = allTickets.find(t => t.id === ticketId) ?? myTicket
 
         if (fromStore?.id === ticketId) {
@@ -40,7 +42,6 @@ export default function QueuePage() {
           const fromDB = await getTicket(ticketId)
           if (fromDB) {
             setTicket(fromDB)
-            await loadFromStorage()
           }
         }
       } catch (err) {
