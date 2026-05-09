@@ -1,6 +1,6 @@
 # 🏥 MediQueue — Modern Hospital Queue Management
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-Sage?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-queue-system-mocha.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-Sage?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-queue-system-web.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-2C3639?style=for-the-badge&logo=github)](https://github.com/utujesandrine456/Hospital_Queue_System)
 
 **MediQueue** is a professional solution for modern hospitals. It allows patients to **book digital tickets** and monitor their wait status in real-time. Designed as an Offline-First PWA, it remains fully functional even during network interruptions.
