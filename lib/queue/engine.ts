@@ -7,7 +7,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     type: 'consultation',
     label: 'Consultation',
     description: 'See a doctor for diagnosis and treatment',
-    icon: '', // Handled by Lucide
+    icon: '',
     color: 'sage',
     avgServiceMinutes: 8,
   },
@@ -15,7 +15,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     type: 'laboratory',
     label: 'Laboratory',
     description: 'Blood tests, urine tests, and lab work',
-    icon: '', // Handled by Lucide
+    icon: '', 
     color: 'sage',
     avgServiceMinutes: 5,
   },
@@ -23,7 +23,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     type: 'pharmacy',
     label: 'Pharmacy',
     description: 'Collect your prescribed medications',
-    icon: '', // Handled by Lucide
+    icon: '',
     color: 'sage',
     avgServiceMinutes: 3,
   },
@@ -31,7 +31,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     type: 'radiology',
     label: 'Radiology',
     description: 'X-rays, MRI, CT scans and imaging',
-    icon: '', // Handled by Lucide
+    icon: '',
     color: 'sage',
     avgServiceMinutes: 12,
   },
@@ -40,7 +40,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
 export function calculateWaitTime(position: number, serviceType: ServiceType): number {
   if (position <= 1) return 0
 
-  let avgMinutes = 5 // Base fallback
+  let avgMinutes = 5
 
   if (SERVICE_CONFIG[serviceType]) {
     avgMinutes = SERVICE_CONFIG[serviceType].avgServiceMinutes
@@ -139,12 +139,19 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
 
   for (const type in grouped) {
     const list = grouped[type]
+    const avgMinutes = SERVICE_CONFIG[type as ServiceType]?.avgServiceMinutes || 5
+    const maxServiceMs = avgMinutes * 60 * 1000
+
     list.forEach((ticket, index) => {
-      const isNewFirst = index === 0 && (Date.now() - ticket.createdAt < 4000)
+      const timeSinceCreated = Date.now() - ticket.createdAt
+      const isNewFirst = index === 0 && timeSinceCreated < 4000
+
+      const isStale = index === 0 && timeSinceCreated > maxServiceMs * 2
+
       result.push({
         ...ticket,
         position: index + 1,
-        status: isNewFirst ? 'waiting' : (index === 0 ? 'serving' : 'waiting'),
+        status: isStale ? 'completed' : (isNewFirst ? 'waiting' : (index === 0 ? 'serving' : 'waiting')),
         estimatedWaitMinutes: calculateWaitTime(index + 1, ticket.serviceType),
       })
     })
