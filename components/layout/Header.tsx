@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
-import { useNetworkStore } from '@/store/networkStore'
+import { Menu, X, Download } from 'lucide-react'
+import { usePWA } from '@/hooks/usePWA'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { useLanguage } from '@/context/LanguageContext'
 export function Header() {
-    const { isOnline } = useNetworkStore()
+    const { isInstalled, promptInstall } = usePWA()
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
@@ -67,15 +67,16 @@ export function Header() {
 
                     <div className="h-6 w-px bg-sage/10 ml-2" />
 
-                    <div className="flex items-center gap-3 pl-2">
-                        <div className={cn(
-                            "w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]",
-                            (mounted && isOnline) ? "bg-sage shadow-sage/40" : "bg-red-400 animate-pulse"
-                        )} />
-                        <span className="text-sm font-bold text-[#2C3639]/60">
-                            {(mounted && isOnline) ? t('systemOnline') : t('systemOffline')}
-                        </span>
-                    </div>
+                    {(!isInstalled) && (
+                        <button
+                            onClick={promptInstall}
+                            className="cursor-pointer ml-2 flex flex-row items-center justify-center gap-2 px-5 py-3 lg:px-6 lg:py-3 bg-[#769382] hover:bg-[#5a7668] text-white rounded-full font-bold shadow-xl shadow-sage/30 transition-all duration-300 hover:scale-105 active:scale-95 border border-sage/40 group whitespace-nowrap overflow-hidden relative"
+                        >
+                            <span className="absolute inset-0 w-full h-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                            <Download size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+                            <span className="text-xs md:text-sm tracking-wide relative z-10">{t('downloadApp')}</span>
+                        </button>
+                    )}
                 </nav>
 
                 <button
@@ -95,8 +96,21 @@ export function Header() {
                         className="absolute top-full left-6 right-6 mt-4 p-6 bg-white/95 backdrop-blur-2xl rounded-4xl border border-white shadow-2xl md:hidden"
                     >
                         <div className="flex flex-col gap-6">
-                            <div className="flex justify-end mb-2">
+                            <div className="flex items-center justify-between mb-2">
                                 <LanguageSwitcher />
+                                {(!isInstalled) && (
+                                    <button
+                                        onClick={() => {
+                                            setIsMobileMenuOpen(false);
+                                            promptInstall();
+                                        }}
+                                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-linear-to-r from-sage to-[#5a7668] text-white rounded-full font-bold shadow-xl shadow-sage/30 active:scale-95 transition-all group overflow-hidden relative"
+                                    >
+                                        <span className="absolute inset-0 w-full h-full bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                                        <Download size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+                                        <span className="text-sm relative z-10">{t('downloadApp')}</span>
+                                    </button>
+                                )}
                             </div>
                             {['home', 'services', 'about', 'contact'].map((item) => (
                                 <Link

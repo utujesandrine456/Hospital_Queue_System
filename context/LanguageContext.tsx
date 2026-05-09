@@ -49,9 +49,9 @@ export const translations: Translations = {
         rw: "10+"
     },
     heroStat1Label: {
-        en: "Services",
-        fr: "Services",
-        rw: "Serivisi"
+        en: "Our Services",
+        fr: "Nos Services",
+        rw: "Serivisi Zacu"
     },
     heroStat2Value: {
         en: "<15m",
@@ -68,6 +68,8 @@ export const translations: Translations = {
 
     home: { en: "Home", fr: "Accueil", rw: "Ahabanza" },
     services: { en: "Services", fr: "Services", rw: "Serivisi" },
+    exploreServices: { en: "Explore Services", fr: "Explorer les Services", rw: "Reba Serivisi" },
+    downloadApp: { en: "Download App", fr: "Télécharger l'App", rw: "Kura Porogaramu Muri Telefone" },
     about: { en: "About", fr: "À propos", rw: "Abo turibo" },
     contact: { en: "Contact", fr: "Contact", rw: "Twandikire" },
     supportLabel: { en: "24/7 Support", fr: "Support 24/7", rw: "Abo kugufasha amasaha 24/7" },
@@ -210,7 +212,7 @@ export const translations: Translations = {
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: string) => string;
+    t: (key: string, fallback?: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -232,10 +234,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('app-language', lang);
     };
 
-    const t = (key: string): string => {
+    const t = (key: string, fallback?: string): string => {
         if (!translations[key]) {
-            console.warn(`Translation key not found: ${key}`);
-            return key;
+            if (!fallback) {
+                console.warn(`Translation key not found: ${key}`);
+            }
+            return fallback || key;
         }
         return translations[key][language] || translations[key]['en'];
     };

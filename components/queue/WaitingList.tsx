@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils'
 
 interface WaitingListProps {
   tickets: QueueTicket[]
+  currentUserTicketId?: string
 }
 
-export function WaitingList({ tickets }: WaitingListProps) {
+export function WaitingList({ tickets, currentUserTicketId }: WaitingListProps) {
   const waitingTickets = tickets.filter((t) => t.status === 'waiting')
   const servingTickets = tickets.filter((t) => t.status === 'serving')
 
@@ -44,7 +45,10 @@ export function WaitingList({ tickets }: WaitingListProps) {
               <motion.div
                 key={ticket.id}
                 layout
-                className="relative overflow-hidden flex items-center gap-5 p-5 rounded-lg bg-sage shadow-xl shadow-sage/20"
+                className={cn(
+                  "relative overflow-hidden flex items-center gap-5 p-5 rounded-lg bg-sage shadow-xl shadow-sage/20",
+                  ticket.id === currentUserTicketId && "ring-4 ring-amber-400 ring-offset-2"
+                )}
               >
                 {/* shimmer */}
                 <motion.div
@@ -78,11 +82,12 @@ export function WaitingList({ tickets }: WaitingListProps) {
                 <motion.div
                   key={ticket.id}
                   layout
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -16 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-sage/8 hover:border-sage/25 hover:shadow-lg hover:shadow-sage/8 transition-all duration-300 cursor-pointer"
+                  className={cn(
+                    "group flex items-center gap-4 p-4 rounded-2xl bg-white border transition-all duration-300 cursor-pointer",
+                    ticket.id === currentUserTicketId
+                      ? "border-amber-400 shadow-lg shadow-amber-100 ring-1 ring-amber-100"
+                      : "border-sage/8 hover:border-sage/25 hover:shadow-lg hover:shadow-sage/8"
+                  )}
                 >
                   <div className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center text-center font-bold text-xs shrink-0 transition-all duration-300",

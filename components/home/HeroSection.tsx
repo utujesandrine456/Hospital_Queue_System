@@ -1,14 +1,29 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Play, Search } from 'lucide-react'
+import { Play } from 'lucide-react'
 import Image from 'next/image'
 import { useLanguage } from '@/context/LanguageContext'
+import { useQueueStore } from '@/store/queueStore'
+import { useServiceStore } from '@/store/serviceStore'
+import { useState, useEffect } from 'react'
+
+
 
 export function HeroSection() {
     const { t } = useLanguage()
+    const { allTickets, loadFromStorage } = useQueueStore()
+    const { services, loadServices } = useServiceStore()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+        loadFromStorage()
+        loadServices()
+    }, [loadFromStorage, loadServices])
+
     return (
-        <section className="relative pt-6 pb-0 px-12 overflow-visible bg-[#F3EFE3]">
+        <section className="relative w-full min-h-[calc(100vh-1rem)] md:min-h-screen flex items-center pt-2 pb-12 px-4 md:px-12 overflow-visible bg-[#F3EFE3]">
             <div
                 className="absolute inset-0 opacity-[0.06] pointer-events-none"
                 style={{
@@ -17,8 +32,8 @@ export function HeroSection() {
                 }}
             />
 
-            <div className="max-w-7xl mx-auto px-4 relative z-10">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-4 items-center mb-0">
+            <div className="max-w-7xl w-full mx-auto px-4 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-4 items-center w-full">
 
                     <div className="space-y-8 pr-0 lg:pr-8 pb-16">
                         <motion.h1
@@ -46,7 +61,7 @@ export function HeroSection() {
                         >
                             <a href='#services'>
                                 <button className="cursor-pointer flex items-center gap-4 bg-sage hover:bg-sage/80 transition-all duration-300 text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-[#769382]/20 group hover:shadow-[#2C3639]/20 hover:scale-[1.02]">
-                                    {t('services')}
+                                    {t('exploreServices')}
                                     <div className="w-8 h-8 rounded-full bg-white text-sage flex items-center justify-center group-hover:text-sage/80 transition-colors shrink-0">
                                         <Play size={14} fill="currentColor" className="ml-0.5" />
                                     </div>
@@ -62,8 +77,8 @@ export function HeroSection() {
                             className="grid grid-cols-3 gap-4 pt-6 border-t border-[#769382]/15"
                         >
                             {[
-                                { value: '27+', label: t('happyPatients') },
-                                { value: '4+', label: t('services') },
+                                { value: mounted ? `${allTickets.length}` : '...', label: t('happyPatients') },
+                                { value: mounted ? `${services.length}` : '...', label: t('services') },
                                 { value: '10+', label: t('doctors') },
                             ].map((stat) => (
                                 <div key={stat.label} className="cursor-pointer flex flex-col group">

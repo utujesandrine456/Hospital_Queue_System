@@ -1,11 +1,11 @@
 'use client'
 
-import { SERVICE_CONFIG } from '@/lib/queue/engine'
+import { useServiceStore } from '@/store/serviceStore'
 import type { ServiceInfo } from '@/types'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQueueStore } from '@/store/queueStore'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
 import { cn } from '@/lib/utils'
 import {
@@ -19,13 +19,27 @@ import {
   Ticket,
   ExternalLink,
   AlertCircle,
+  Smile, Syringe, HeartPulse, Baby, Cross, Bone, Eye
 } from 'lucide-react'
 
-const ICON_MAP = {
+const ICON_MAP: Record<string, any> = {
   consultation: Stethoscope,
   laboratory: FlaskConical,
   pharmacy: Pill,
   radiology: Microscope,
+}
+
+export function getIconForService(service: any) {
+  if (ICON_MAP[service.type]) return ICON_MAP[service.type]
+  const lower = (service.label || '').toLowerCase()
+  if (lower.includes('dentist') || lower.includes('teeth') || lower.includes('tooth')) return Smile
+  if (lower.includes('cardio') || lower.includes('heart')) return HeartPulse
+  if (lower.includes('pediatric') || lower.includes('baby') || lower.includes('child')) return Baby
+  if (lower.includes('ortho') || lower.includes('bone')) return Bone
+  if (lower.includes('eye') || lower.includes('vision') || lower.includes('opt')) return Eye
+  if (lower.includes('vaccin') || lower.includes('inject')) return Syringe
+  if (lower.includes('emerg') || lower.includes('urgent') || lower.includes('trauma')) return Cross
+  return Sparkles
 }
 
 export function ServiceSelector() {
@@ -35,6 +49,11 @@ export function ServiceSelector() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [patientName, setPatientName] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
+  const { services, loadServices } = useServiceStore()
+
+  useEffect(() => {
+    loadServices()
+  }, [loadServices])
 
   const hasActiveTicket =
     myTicket &&
@@ -49,7 +68,7 @@ export function ServiceSelector() {
   const handleGenerateTicket = async () => {
     if (!selectedId || !patientName.trim()) return
     setIsGenerating(true)
-    const category = Object.values(SERVICE_CONFIG).find(c => c.type === selectedId)!
+    const category = services.find(c => c.type === selectedId)!
     try {
       const ticket = await createTicket(category.type, patientName.trim())
       if (ticket) {
@@ -72,8 +91,8 @@ export function ServiceSelector() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {Object.values(SERVICE_CONFIG).map((category, index) => {
-          const Icon = ICON_MAP[category.type as keyof typeof ICON_MAP] || Sparkles
+        {services.map((category, index) => {
+          const Icon = getIconForService(category)
           const isSelected = selectedId === category.type
 
           // Does the user already hold an active ticket for THIS specific card?
@@ -129,7 +148,7 @@ export function ServiceSelector() {
                       isSelected ? 'text-cream' : 'text-[#2C3639]'
                     )}
                   >
-                    {t(`${category.type}Title`)}
+                    {t(`${category.type}Title`, category.label)}
                   </h3>
                   <p
                     className={cn(
@@ -137,7 +156,7 @@ export function ServiceSelector() {
                       isSelected ? 'text-cream/70' : 'text-sage/60'
                     )}
                   >
-                    {t(`${category.type}Desc`)}
+                    {t(`${category.type}Desc`, category.description)}
                   </p>
                 </div>
 
@@ -179,7 +198,7 @@ export function ServiceSelector() {
                   <div>
                     <p className="text-xs font-bold text-cream/70 uppercase tracking-widest">{t('activeTicketNotice')}</p>
                     <p className="text-base font-bold text-cream">
-                      {t(`${selectedId}Title`)}
+                      {t(`${selectedId}Title`, services.find(s => s.type === selectedId)?.label)}
                     </p>
                   </div>
                 </div>

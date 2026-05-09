@@ -14,6 +14,8 @@ import type { QueueTicket } from '@/types'
 import Image from 'next/image'
 import { FullScreenLoader } from '@/components/ui/Loader'
 import { useLanguage } from '@/context/LanguageContext'
+import { toast } from 'sonner'
+import { useRef } from 'react'
 
 export default function QueuePage() {
   const params = useParams()
@@ -24,6 +26,7 @@ export default function QueuePage() {
   const { allTickets, myTicket, loadFromStorage } = useQueueStore()
   const [ticket, setTicket] = useState<QueueTicket | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const prevPosition = useRef<number | null>(null)
 
   useNetworkStatus()
   useQueueSimulator(ticket?.serviceType ?? null)
@@ -38,10 +41,12 @@ export default function QueuePage() {
 
         if (fromStore?.id === ticketId) {
           setTicket(fromStore)
+          prevPosition.current = fromStore.position
         } else {
           const fromDB = await getTicket(ticketId)
           if (fromDB) {
             setTicket(fromDB)
+            prevPosition.current = fromDB.position
           }
         }
       } catch (err) {
@@ -56,11 +61,26 @@ export default function QueuePage() {
 
   useEffect(() => {
     const updated = allTickets.find(t => t.id === ticketId)
-    if (updated) setTicket(updated)
-    else if (myTicket?.id === ticketId) setTicket(myTicket)
-  }, [allTickets, myTicket, ticketId])
+    const freshTicket = updated || (myTicket?.id === ticketId ? myTicket : null)
 
-  const serviceQueue = ticket
+    if (freshTicket) {
+      if (
+        prevPosition.current !== null &&
+        freshTicket.position < prevPosition.current &&
+        freshTicket.position > 0
+      ) {
+        if (freshTicket.position === 1) {
+          toast.success(t('nowServing') || "It is your turn! Please proceed.", { position: 'top-center', duration: 8000 })
+        } else {
+          toast.info(t('positionUpdated') || `You moved up! You are now number ${freshTicket.position} in queue.`, { position: 'top-center' })
+        }
+      }
+      prevPosition.current = freshTicket.position
+      setTicket(freshTicket)
+    }
+  }, [allTickets, myTicket, ticketId, t])
+
+  const fullQueue = ticket
     ? allTickets.filter(
       t => t.serviceType === ticket.serviceType && t.status !== 'completed'
     )
@@ -125,7 +145,6 @@ export default function QueuePage() {
 
           <div className="space-y-8">
             <TicketCard ticket={ticket} />
-            <QueueStatus ticket={ticket} totalInQueue={serviceQueue.length} />
           </div>
 
           {ticket.status === 'completed' && (
@@ -155,28 +174,38 @@ export default function QueuePage() {
 
       <div className="flex-1 h-full lg:overflow-y-auto z-10">
         <div className="max-w-2xl mx-auto px-6 lg:px-12 py-10 lg:py-16">
-          {serviceQueue.length > 0 ? (
+          {fullQueue.length > 0 ? (
             <div className="space-y-10">
+              <QueueStatus ticket={ticket} totalInQueue={fullQueue.length} />
+
               <div>
                 <h2 className="text-4xl font-bold text-[#2C3639]">{t('liveWaitingList')}</h2>
                 <p className="text-sage/60 font-medium mt-2">{t('realTimeStatus')}</p>
               </div>
-              <WaitingList tickets={serviceQueue} />
+              <WaitingList tickets={fullQueue} currentUserTicketId={ticket.id} />
             </div>
           ) : (
             <div className="h-auto flex flex-col items-center justify-center text-center py-6">
-              <div className="cursor-pointer mb-10 w-64 h-64 lg:w-80 lg:h-80 relative opacity-90 transition-transform hover:scale-105 duration-500 hover:opacity-100">
+              <div className="mb-10 w-64 h-64 lg:w-80 lg:h-80 relative opacity-90 transition-transform hover:scale-105 duration-500">
                 <Image
-                  src="/images/queue-empty.png"
-                  alt="Queue is empty"
+                  src="/images/doctor-welcome.png"
+                  alt="Doctor is ready"
                   fill
-                  className="object-contain mix-blend-multiply"
+                  className="object-contain"
                   priority
+                  onError={(e) => {
+                    // Fallback if image doesn't exist
+                    e.currentTarget.src = "/images/queue-empty.png"
+                  }}
                 />
               </div>
-              <h3 className="text-3xl lg:text-4xl font-black text-[#2C3639]">{t('queueEmpty')}</h3>
-              <p className="text-sage/60 max-w-sm mt-4 text-sm font-medium">
-                {t('noPatientsInQueue')}
+              <h3 className="text-3xl lg:text-4xl font-black text-[#2C3639]">
+                {ticket.position === 1 ? "You're at the Front!" : "Quiet Day"}
+              </h3>
+              <p className="text-sage/60 max-w-sm mt-4 text-sm font-medium leading-relaxed">
+                {ticket.position === 1
+                  ? "You are currently the only patient in this department. A specialist is preparing to see you shortly—please keep your app open."
+                  : "There are currently no other patients waiting ahead or behind you in this department."}
               </p>
             </div>
           )}

@@ -53,14 +53,14 @@ export async function deleteTicket(id: string): Promise<void> {
 export async function getNextTicketNumber(serviceType: ServiceType): Promise<string> {
   const db = await getDB()
 
-  const prefixMap: Record<ServiceType, string> = {
+  const prefixMap: Record<string, string> = {
     consultation: 'CON',
     laboratory: 'LAB',
     pharmacy: 'PHM',
     radiology: 'RAD',
   }
 
-  const prefix = prefixMap[serviceType]
+  const prefix = prefixMap[serviceType] || (serviceType || 'TKT').substring(0, 3).toUpperCase()
   const existing = await db.get('counters', serviceType)
   const currentCount = existing?.count ?? 0
   const nextCount = currentCount + 1

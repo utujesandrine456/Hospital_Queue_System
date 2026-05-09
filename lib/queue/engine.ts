@@ -39,49 +39,29 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
 
 export function calculateWaitTime(position: number, serviceType: ServiceType): number {
   if (position <= 1) return 0
-  const avgMinutes = SERVICE_CONFIG[serviceType].avgServiceMinutes
-  // Real-world wait often scales with position but has a base floor
+
+  let avgMinutes = 5 // Base fallback
+
+  if (SERVICE_CONFIG[serviceType]) {
+    avgMinutes = SERVICE_CONFIG[serviceType].avgServiceMinutes
+  } else if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem('hospital_services')
+      if (stored) {
+        const services: ServiceInfo[] = JSON.parse(stored)
+        const svc = services.find((s: ServiceInfo) => s.type === serviceType)
+        if (svc?.avgServiceMinutes) {
+          avgMinutes = svc.avgServiceMinutes
+        }
+      }
+    } catch (e) {
+      // fallback applies safely
+    }
+  }
+
   return (position - 1) * avgMinutes
 }
 
-export async function generateSimulatedPatients(
-  serviceType: ServiceType,
-  count: number = 6
-): Promise<QueueTicket[]> {
-  const names = [
-    'Patient A', 'Patient B', 'Patient C', 'Patient D',
-    'Patient E', 'Patient F', 'Patient G', 'Patient H',
-    'Patient I', 'Patient J',
-  ]
-
-  const simulated: QueueTicket[] = []
-  const baseTime = Date.now() - (count * 2 * 60 * 1000)
-
-  for (let i = 0; i < count; i++) {
-    const ticketNumber = await getNextTicketNumber(serviceType)
-    const position = i + 1
-    const createdAt = baseTime + (i * 2 * 60 * 1000)
-
-    const ticket: QueueTicket = {
-      id: uuidv4(),
-      ticketNumber,
-      serviceType,
-      status: position === 1 ? 'serving' : 'waiting',
-      position,
-      estimatedWaitMinutes: calculateWaitTime(position, serviceType),
-      patientName: names[i % names.length],
-      createdAt,
-      updatedAt: createdAt,
-      synced: true,
-      isSimulated: true,
-    }
-
-    simulated.push(ticket)
-    await saveTicket(ticket)
-  }
-
-  return simulated
-}
 
 export async function createNewTicket(
   serviceType: ServiceType,
@@ -149,10 +129,26 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
     .filter(t => t.status !== 'completed')
     .sort((a, b) => a.createdAt - b.createdAt)
 
-  return active.map((ticket, index) => ({
-    ...ticket,
-    position: index + 1,
-    status: index === 0 ? 'serving' as const : 'waiting' as const,
-    estimatedWaitMinutes: calculateWaitTime(index + 1, ticket.serviceType),
-  }))
+  const grouped: Record<string, QueueTicket[]> = {}
+  active.forEach(t => {
+    if (!grouped[t.serviceType]) grouped[t.serviceType] = []
+    grouped[t.serviceType].push(t)
+  })
+
+  const result: QueueTicket[] = []
+
+  for (const type in grouped) {
+    const list = grouped[type]
+    list.forEach((ticket, index) => {
+      const isNewFirst = index === 0 && (Date.now() - ticket.createdAt < 4000)
+      result.push({
+        ...ticket,
+        position: index + 1,
+        status: isNewFirst ? 'waiting' : (index === 0 ? 'serving' : 'waiting'),
+        estimatedWaitMinutes: calculateWaitTime(index + 1, ticket.serviceType),
+      })
+    })
+  }
+
+  return result
 }

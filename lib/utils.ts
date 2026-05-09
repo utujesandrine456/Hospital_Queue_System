@@ -25,9 +25,10 @@ export function formatTime(timestamp: number): string {
 export function getStatusText(status: TicketStatus, position: number): string {
   switch (status) {
     case 'waiting':
-      return position <= 2
+      if (position === 1) return `Preparing for you... Please be ready`
+      return position === 2
         ? `You are next! Please be ready.`
-        : `You are number ${position} in queue`
+        : `There are ${position - 1} people ahead of you`
     case 'serving':
       return 'Please proceed — you are being served now'
     case 'completed':

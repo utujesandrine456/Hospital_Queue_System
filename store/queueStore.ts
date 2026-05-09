@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { getAllTickets, saveTicket, saveAllTickets } from '@/lib/db/idb'
-import { createNewTicket, generateSimulatedPatients, recalculatePositions, calculateWaitTime } from '@/lib/queue/engine'
+import { createNewTicket, recalculatePositions, calculateWaitTime } from '@/lib/queue/engine'
 import { queueOutboxAction } from '@/lib/sync/outbox'
 import type { QueueStoreState, QueueTicket, ServiceType, TicketStatus, OutboxEntry } from '@/types'
 
@@ -24,7 +24,7 @@ export const useQueueStore = create<QueueStoreState>()(
 
           const currentMyTicket = get().myTicket
           const updatedMyTicket = currentMyTicket
-            ? allRecalculated.find(t => t.id === currentMyTicket.id) ?? currentMyTicket
+            ? allRecalculated.find(t => t.id === currentMyTicket.id) || null
             : null
 
           set({
@@ -39,13 +39,7 @@ export const useQueueStore = create<QueueStoreState>()(
       initializeQueue: async (serviceType: ServiceType) => {
         set({ isLoading: true })
         try {
-          const existing = await getAllTickets()
-          const hasPatients = existing.some(t => t.serviceType === serviceType)
-
-          if (!hasPatients) {
-            await generateSimulatedPatients(serviceType, 6)
-          }
-
+          // In production, we don't generate fake patients anymore
           await get().loadFromStorage()
         } catch (err) {
           console.error('[Store] Failed to initialize queue:', err)
@@ -90,17 +84,20 @@ export const useQueueStore = create<QueueStoreState>()(
         }
       },
 
-      advanceQueue: async () => {
+      advanceQueue: async (serviceType: ServiceType) => {
         const current = get().allTickets
 
-        const serving = current.find(t => t.position === 1 && !t.isSimulated)
-          || current.find(t => t.position === 1)
+        const serviceTickets = current.filter(t => t.serviceType === serviceType)
+        const serving = serviceTickets.find(t => t.position === 1 && !t.isSimulated)
+          || serviceTickets.find(t => t.position === 1)
 
         if (!serving) return
 
         const now = Date.now()
 
         const updated = current.map(ticket => {
+          if (ticket.serviceType !== serviceType) return ticket;
+
           if (ticket.id === serving.id) {
             return { ...ticket, status: 'completed' as TicketStatus, position: 0, updatedAt: now }
           }

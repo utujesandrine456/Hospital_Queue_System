@@ -1,4 +1,4 @@
-export type ServiceType = 'consultation' | 'laboratory' | 'pharmacy' | 'radiology'
+export type ServiceType = string
 
 export type TicketStatus = 'waiting' | 'serving' | 'completed' | 'cancelled'
 
@@ -49,7 +49,7 @@ export interface QueueStoreState {
   isCreating: boolean
   initializeQueue: (serviceType: ServiceType) => Promise<void>
   createTicket: (serviceType: ServiceType, patientName: string) => Promise<QueueTicket | null>
-  advanceQueue: () => void
+  advanceQueue: (serviceType: ServiceType) => Promise<void>
   setTicketStatus: (id: string, status: TicketStatus) => void
   loadFromStorage: () => Promise<void>
   addToOutbox: (entry: OutboxEntry) => void

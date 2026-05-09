@@ -56,7 +56,9 @@ export function QueueStatus({ ticket, totalInQueue }: QueueStatusProps) {
           <div className="flex justify-between items-end">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-sage/40">Queue progress</p>
-              <p className="text-sm font-bold text-sage">{ticket.position} people ahead of you</p>
+              <p className="text-sm font-bold text-sage">
+                {ticket.position === 1 ? 'You are the very first patient' : `${ticket.position - 1} people ahead of you`}
+              </p>
             </div>
             <p className="text-[10px] font-bold text-sage/30">{Math.round(((totalInQueue - ticket.position + 1) / totalInQueue) * 100)}% Complete</p>
           </div>

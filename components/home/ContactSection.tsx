@@ -82,7 +82,7 @@ export function ContactSection() {
     return (
         <section id="contact" className="relative py-16 bg-cream overflow-hidden">
             <div className="max-w-7xl mx-auto">
-                <div className="relative rounded-4xl py-16 px-12 mx-16 bg-[#2C3639] overflow-hidden shadow-2xl">
+                <div className="relative rounded-4xl py-12 px-6 md:py-16 md:px-12 mx-4 md:mx-16 bg-[#2C3639] overflow-hidden shadow-2xl">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-sage/5 rounded-full blur-[100px] -mr-48 -mt-48" />
 
                     <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
@@ -94,7 +94,7 @@ export function ContactSection() {
                             className="space-y-12"
                         >
                             <div>
-                                <h2 className="text-5xl lg:text-6xl font-bold text-cream leading-none tracking-tight">
+                                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-cream leading-none tracking-tight">
                                     {t('contactTitle1')} <br />
                                     <span className="text-sage italic">{t('contactTitle2')}</span>
                                 </h2>

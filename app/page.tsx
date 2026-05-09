@@ -38,13 +38,13 @@ export default function HomePage() {
   if (!mounted || showSplash) return <FullScreenLoader text={t('preparingExp')} />
 
   return (
-    <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-24">
+    <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-20 md:pt-24">
       <Header />
 
       <div className="relative z-10">
         <HeroSection />
 
-        <section id="services" className="relative py-24 px-6">
+        <section id="services" className="relative py-12 md:py-24 px-4 md:px-6">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -57,10 +57,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="about" className="py-32 bg-white/40">
+        <section id="about" className="py-16 md:py-32 bg-white/40">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <h2 className="text-4xl lg:text-6xl font-bold text-[#2C3639] mb-8">{t('aboutTitle')}</h2>
-            <p className="text-lg text-[#2C3639]/60 font-medium max-w-2xl mx-auto leading-relaxed">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-bold text-[#2C3639] mb-4 md:mb-8">{t('aboutTitle')}</h2>
+            <p className="text-base md:text-lg text-[#2C3639]/60 font-medium max-w-2xl mx-auto leading-relaxed">
               {t('aboutDesc')}
             </p>
           </div>
