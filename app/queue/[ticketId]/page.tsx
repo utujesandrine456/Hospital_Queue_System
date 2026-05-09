@@ -188,15 +188,11 @@ export default function QueuePage() {
             <div className="h-auto flex flex-col items-center justify-center text-center py-6">
               <div className="mb-10 w-64 h-64 lg:w-80 lg:h-80 relative opacity-90 transition-transform hover:scale-105 duration-500">
                 <Image
-                  src="/images/doctor-welcome.png"
+                  src="/images/queue-empty.png"
                   alt="Doctor is ready"
                   fill
                   className="object-contain"
                   priority
-                  onError={(e) => {
-                    // Fallback if image doesn't exist
-                    e.currentTarget.src = "/images/queue-empty.png"
-                  }}
                 />
               </div>
               <h3 className="text-3xl lg:text-4xl font-black text-[#2C3639]">
