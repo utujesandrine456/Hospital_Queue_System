@@ -17,9 +17,15 @@ export function usePWA() {
     const [isInstalled, setIsInstalled] = useState(false)
 
     useEffect(() => {
-        // Check if the app is already installed
-        if (window.matchMedia('(display-mode: standalone)').matches) {
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
             setIsInstalled(true)
+        }
+
+        // Check if we already caught the prompt globally
+        if ((window as any).deferredPWAPrompt) {
+            setDeferredPrompt((window as any).deferredPWAPrompt)
+            setIsInstallable(true)
         }
 
         const handleBeforeInstallPrompt = (e: Event) => {
@@ -28,17 +34,27 @@ export function usePWA() {
             setIsInstallable(true)
         }
 
+        const handlePromptReady = () => {
+            if ((window as any).deferredPWAPrompt) {
+                setDeferredPrompt((window as any).deferredPWAPrompt)
+                setIsInstallable(true)
+            }
+        }
+
         const handleAppInstalled = () => {
             setIsInstallable(false)
             setIsInstalled(true)
             setDeferredPrompt(null)
+            if ((window as any).deferredPWAPrompt) (window as any).deferredPWAPrompt = null;
         }
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+        window.addEventListener('pwa-prompt-ready', handlePromptReady)
         window.addEventListener('appinstalled', handleAppInstalled)
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+            window.removeEventListener('pwa-prompt-ready', handlePromptReady)
             window.removeEventListener('appinstalled', handleAppInstalled)
         }
     }, [])
