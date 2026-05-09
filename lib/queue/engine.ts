@@ -9,7 +9,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     description: 'See a doctor for diagnosis and treatment',
     icon: '',
     color: 'sage',
-    avgServiceMinutes: 8,
+    avgServiceMinutes: 4,
   },
   laboratory: {
     type: 'laboratory',
@@ -33,7 +33,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     description: 'X-rays, MRI, CT scans and imaging',
     icon: '',
     color: 'sage',
-    avgServiceMinutes: 12,
+    avgServiceMinutes: 6,
   },
 }
 
