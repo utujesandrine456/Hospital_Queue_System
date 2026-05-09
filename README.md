@@ -9,20 +9,21 @@
 
 ## ✨ Key Features
 
-- 🎫 **Digital Ticketing:** Select a service and receive a unique ticket number instantly.
-- 📡 **Live Accuracy:** The dashboard updates your position every few seconds for complete transparency.
+- 🎫 **[Digital Ticketing](https://hospital-queue-system-web.vercel.app/#services):** Select a service and receive a unique ticket number instantly.
+- 📡 **[Live Tracking](https://hospital-queue-system-web.vercel.app/):** The dashboard updates your position every few seconds for complete transparency.
 - 📴 **Offline Reliability:** Generate tickets and manage the line without an active internet connection.
 - 📱 **Native Experience:** Install MediQueue directly to your home screen for a seamless mobile experience.
-- 🛠️ **Admin Control:** Medical staff can manage departments and advance the queue with a single tap.
+- 🛠️ **[Admin Control](https://hospital-queue-system-web.vercel.app/admin):** Medical staff can manage departments and advance the queue with a single tap.
 - 🔔 **Smart Alerts:** Receive instant notifications when you are next in line or being served.
+- ✉️ **[Active Contact](https://hospital-queue-system-web.vercel.app/#contact):** Direct line for hospital support and inquiries.
 
 ---
 
 ## 👥 The Patient Journey
 
 MediQueue transforms the traditional waiting room into a high-end experience:
-1. **Seamless Booking:** Upon arrival, patients select their department. A unique digital ticket is immediately stored on their device.
-2. **Real-time Tracking:** The interface shows exactly how many people are waiting ahead and provides an estimated wait time.
+1. **[Seamless Booking](https://hospital-queue-system-web.vercel.app/#services):** Upon arrival, patients select their department. A unique digital ticket is immediately stored on their device.
+2. **[Real-time Tracking](https://hospital-queue-system-web.vercel.app/):** The interface shows exactly how many people are waiting ahead and provides an estimated wait time.
 3. **Queue Mobility:** Patients are free to move around the hospital. The live status eliminates the need to wait in a specific area.
 4. **Instant Notification:** As soon as the staff is ready, the app alerts the patient to proceed to the counter.
 
