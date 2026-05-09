@@ -15,7 +15,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     type: 'laboratory',
     label: 'Laboratory',
     description: 'Blood tests, urine tests, and lab work',
-    icon: '', 
+    icon: '',
     color: 'sage',
     avgServiceMinutes: 5,
   },
@@ -146,7 +146,7 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
       const timeSinceCreated = Date.now() - ticket.createdAt
       const isNewFirst = index === 0 && timeSinceCreated < 4000
 
-      const isStale = index === 0 && timeSinceCreated > maxServiceMs * 2
+      const isStale = index === 0 && timeSinceCreated > maxServiceMs * 1.1
 
       result.push({
         ...ticket,

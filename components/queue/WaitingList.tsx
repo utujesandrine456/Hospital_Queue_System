@@ -24,7 +24,7 @@ export function WaitingList({ tickets, currentUserTicketId }: WaitingListProps) 
         </div>
         <div className="flex items-center gap-2.5 px-4 py-3 rounded-md bg-white border border-sage/10 shadow-sm text-sage">
           <Users size={16} strokeWidth={2.5} />
-          <span className="font-bold text-sm">{tickets.length} in queue</span>
+          <span className="font-bold text-sm">{(waitingTickets.length + servingTickets.length)} in queue</span>
         </div>
       </div>
 

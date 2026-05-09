@@ -31,6 +31,15 @@ export const useQueueStore = create<QueueStoreState>()(
             allTickets: allRecalculated,
             myTicket: updatedMyTicket,
           })
+
+          // CRITICAL: If any tickets were automatically marked as 'completed',
+          // we must persist those changes to IndexedDB, otherwise they will 'ghost' on refresh.
+          const ticketsThatBecameCompleted = recalculated.filter(
+            t => t.status === 'completed' && tickets.find(old => old.id === t.id && old.status !== 'completed')
+          )
+          if (ticketsThatBecameCompleted.length > 0) {
+            await saveAllTickets(allRecalculated)
+          }
         } catch (err) {
           console.error('[Store] Failed to load from storage:', err)
         }
