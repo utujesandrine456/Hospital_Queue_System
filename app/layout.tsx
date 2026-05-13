@@ -3,6 +3,7 @@ import { Sen } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { OfflineStatus } from "@/components/layout/OfflineStatus";
 
 const sen = Sen({
   variable: "--font-sen",

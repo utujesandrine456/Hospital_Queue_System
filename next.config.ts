@@ -10,16 +10,15 @@ module.exports = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: false,
   buildExcludes: [/middleware-manifest\.json$/, /_next\/static\/.*\.map$/],
-  cacheOnFrontEndNav: true,
-  reloadOnOnline: true,
   runtimeCaching: [
     {
-      urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname === '/',
+      urlPattern: ({ url }: { url: URL }) => url.pathname === '/',
       handler: 'StaleWhileRevalidate',
       options: {
-        cacheName: 'homepage-cache',
+        cacheName: 'homepage',
+        expiration: { maxEntries: 1, maxAgeSeconds: 24 * 60 * 60 },
       },
     },
     {
@@ -27,11 +26,11 @@ module.exports = withPWA({
       handler: 'CacheFirst',
       options: {
         cacheName: 'static-assets',
-        expiration: { maxEntries: 500, maxAgeSeconds: 30 * 24 * 60 * 60 },
+        expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
     {
-      urlPattern: ({ url }) => url.pathname.startsWith('/api') || url.pathname.startsWith('/_next/data'),
+      urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/api') || url.pathname.startsWith('/_next/data'),
       handler: 'NetworkFirst',
       options: {
         cacheName: 'dynamic-data',
@@ -42,7 +41,7 @@ module.exports = withPWA({
       urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
       handler: 'CacheFirst',
       options: {
-        cacheName: 'images-cache',
+        cacheName: 'images',
         expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
@@ -50,7 +49,7 @@ module.exports = withPWA({
       urlPattern: /.*/i,
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'global-cache',
+        cacheName: 'others',
         networkTimeoutSeconds: 5,
       },
     },
