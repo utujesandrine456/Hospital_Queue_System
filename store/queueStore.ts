@@ -16,15 +16,22 @@ export const useQueueStore = create<QueueStoreState>()(
 
       loadFromStorage: async () => {
         try {
-          const tickets = await getAllTickets()
+          let tickets = await getAllTickets()
+
+          // FULL PWA / DEMO MODE: Refill the queue if it's getting empty
+          const myTicket = get().myTicket
+          if (myTicket && myTicket.status !== 'completed') {
+            const { ensureQueueHealthy } = await import('@/lib/queue/engine')
+            tickets = await ensureQueueHealthy(tickets, myTicket.serviceType)
+          }
+
           const activeTickets = tickets.filter(t => t.status !== 'completed')
           const recalculated = recalculatePositions(activeTickets)
           const completed = tickets.filter(t => t.status === 'completed')
           const allRecalculated = [...recalculated, ...completed]
 
-          const currentMyTicket = get().myTicket
-          const updatedMyTicket = currentMyTicket
-            ? allRecalculated.find(t => t.id === currentMyTicket.id) || null
+          const updatedMyTicket = myTicket
+            ? allRecalculated.find(t => t.id === myTicket.id) || null
             : null
 
           set({
@@ -32,12 +39,15 @@ export const useQueueStore = create<QueueStoreState>()(
             myTicket: updatedMyTicket,
           })
 
-          // CRITICAL: If any tickets were automatically marked as 'completed',
-          // we must persist those changes to IndexedDB, otherwise they will 'ghost' on refresh.
-          const ticketsThatBecameCompleted = recalculated.filter(
-            t => t.status === 'completed' && tickets.find(old => old.id === t.id && old.status !== 'completed')
+          // CRITICAL: Persist auto-advancements to IndexedDB
+          const hasSignificantChanges = recalculated.some(
+            t => {
+              const old = tickets.find(o => o.id === t.id)
+              return old && (old.status !== t.status || old.position !== t.position)
+            }
           )
-          if (ticketsThatBecameCompleted.length > 0) {
+
+          if (hasSignificantChanges) {
             await saveAllTickets(allRecalculated)
           }
         } catch (err) {

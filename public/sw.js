@@ -1,23 +1,24 @@
-const CACHE_NAME = 'mediqueue-v3-standalone';
+
+const CACHE_NAME = 'mediqueue-nuclear-v5';
+const OFFLINE_URL = '/';
 
 const PRECACHE_ASSETS = [
-    '/',
+    OFFLINE_URL,
     '/manifest.json',
     '/images/logo-image.png',
-    '/favicon.ico'
+    '/favicon.ico',
 ];
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Pre-caching critical assets');
+            console.log('[SW] Nuclear Preloading Active');
             return cache.addAll(PRECACHE_ASSETS);
         })
     );
 });
 
-// Activate Event - Clean up old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(clients.claim());
     event.waitUntil(
@@ -27,54 +28,48 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
-    console.log('[SW] Service Worker Activated');
+    console.log('[SW] Nuclear Control Established');
 });
 
-// Fetch Event - Cache-First for static assets, Network-First for navigation
+// 3. Fetch Event: Intercept everything
 self.addEventListener('fetch', (event) => {
     const { request } = event;
-    const url = new URL(request.url);
 
     // Skip non-GET requests
     if (request.method !== 'GET') return;
 
-    // Handle Navigation (HTML pages)
+    // Handling HTML pages (Navigation)
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
+                    // If network works, save it and return
                     const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
                     return networkResponse;
                 })
                 .catch(() => {
-                    console.log('[SW] Fetch failed, serving from cache:', request.url);
-                    return caches.match(request).then(cached => cached || caches.match('/'));
+                    // If network fails (Offline / ERR_NAME_NOT_RESOLVED), serve from cache
+                    console.log('[SW] Offline detected, serving from nuclear cache');
+                    return caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL));
                 })
         );
         return;
     }
 
-    // Handle Static Assets (JS, CSS, Images)
+    // Handling Static Assets (JS, CSS, Images)
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
-            if (cachedResponse) {
-                // Return cached, but optionally update in background for next time
-                if (url.pathname.includes('/_next/static/')) {
-                    return cachedResponse; // No need to update static hashed files
-                }
-                return cachedResponse;
-            }
+            if (cachedResponse) return cachedResponse;
 
             return fetch(request).then((networkResponse) => {
-                if (!networkResponse || networkResponse.status !== 200) {
-                    return networkResponse;
-                }
+                if (!networkResponse || networkResponse.status !== 200) return networkResponse;
+
                 const responseToCache = networkResponse.clone();
                 caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
                 return networkResponse;
             }).catch(() => {
-                // Silent fail for non-critical assets
+                // Return nothing for failed assets to let browser handle it or use a default
             });
         })
     );

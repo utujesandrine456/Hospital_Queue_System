@@ -210,7 +210,7 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
         if (!servingStartedAt) {
           servingStartedAt = now
         }
-        
+
         const elapsedSinceServiceStart = now - servingStartedAt
         if (elapsedSinceServiceStart > serviceMs) {
           isStale = true
@@ -234,4 +234,23 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
 
   const terminal = tickets.filter(t => t.status === 'completed' || t.status === 'cancelled')
   return [...result, ...terminal]
+}
+
+/**
+ * Ensures the queue has enough active patients for a vibrant demo.
+ * If less than 3 people are waiting, it adds new simulated patients.
+ */
+export async function ensureQueueHealthy(tickets: QueueTicket[], serviceType: ServiceType): Promise<QueueTicket[]> {
+  const activeForService = tickets.filter(
+    t => t.serviceType === serviceType && t.status !== 'completed' && t.status !== 'cancelled'
+  )
+
+  if (activeForService.length < 3) {
+    const countToAdd = 3 - activeForService.length
+    const newFakes = await generateSimulatedPatients(serviceType, countToAdd)
+    await saveAllTickets(newFakes)
+    return [...tickets, ...newFakes]
+  }
+
+  return tickets
 }
