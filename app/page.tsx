@@ -26,11 +26,22 @@ export default function HomePage() {
 
   const { loadFromStorage, myTicket } = useQueueStore()
   const [mounted, setMounted] = useState(false)
+  const [hasHydrated, setHasHydrated] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
   const [viewOverride, setViewOverride] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
+    // Synchronous check for Zustand persist hydration
+    const checkHydration = () => {
+      if (typeof window !== 'undefined') {
+        const storage = localStorage.getItem('hospital-queue-store')
+        if (storage) setHasHydrated(true)
+        else setHasHydrated(true) // Even if empty, we are hydrated
+      }
+    }
+    checkHydration()
+
     loadFromStorage()
     const timer = setTimeout(() => {
       setShowSplash(false)
@@ -38,7 +49,7 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [loadFromStorage])
 
-  if (!mounted || showSplash) return <FullScreenLoader text={t('preparingExp')} />
+  if (!mounted || showSplash || !hasHydrated) return <FullScreenLoader text={t('preparingExp')} />
 
   // SINGLE-PAGE FORTRESS: If we have an active ticket, show it directly on the home page
   // This prevents any offline navigation failures.
