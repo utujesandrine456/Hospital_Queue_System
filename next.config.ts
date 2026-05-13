@@ -11,6 +11,7 @@ module.exports = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  buildExcludes: [/middleware-manifest\.json$/],
   runtimeCaching: [
     {
       urlPattern: /^https?:\/\/.*\/_next\/static\/.*/,
@@ -21,7 +22,7 @@ module.exports = withPWA({
       },
     },
     {
-      urlPattern: /^\/(_next\/data|api)\/.*/,
+      urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/_next/data') || url.pathname.startsWith('/api'),
       handler: 'NetworkFirst',
       options: {
         cacheName: 'api-data',
@@ -29,14 +30,7 @@ module.exports = withPWA({
       },
     },
     {
-      urlPattern: /^https?:\/\/.*\/_next\/image\?url=.*/,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'next-images',
-      },
-    },
-    {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
       handler: 'CacheFirst',
       options: {
         cacheName: 'images',
@@ -44,11 +38,11 @@ module.exports = withPWA({
       },
     },
     {
-      urlPattern: /^https?:\/\/.*\/?.*/,
+      urlPattern: /.*/,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages-cache',
-        networkTimeoutSeconds: 3, // Fallback to cache after 3s if offline
+        networkTimeoutSeconds: 3,
         expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
       },
     },

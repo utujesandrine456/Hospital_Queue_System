@@ -1,21 +1,37 @@
 {
-    "name": "Hospital Smart Queue System",
-    "short_name": "Hospital Queue",
+    "name": "MediQueue - Hospital Smart Queue",
+    "short_name": "MediQueue",
     "description": "Professional offline-first patient queue management system.",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#F3EFE3",
     "theme_color": "#769382",
+    "orientation": "portrait",
     "icons": [
         {
-            "src": "/next.svg",
+            "src": "/images/logo-image.png",
             "sizes": "192x192",
-            "type": "image/svg+xml"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
-            "src": "/next.svg",
+            "src": "/images/logo-image.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/images/logo-image.png",
             "sizes": "512x512",
-            "type": "image/svg+xml"
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/images/logo-image.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ]
 }
