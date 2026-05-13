@@ -96,6 +96,12 @@ export default function RootLayout({
         />
         <LanguageProvider>
           {children}
+          <div className="fixed bottom-4 left-4 z-50 pointer-events-none">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/40 backdrop-blur-xs border border-sage/10 rounded-full text-[9px] font-bold text-sage/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse" />
+              DB_READY: ACTIVE_NODE
+            </div>
+          </div>
           <OfflineStatus />
         </LanguageProvider>
       </body>

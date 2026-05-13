@@ -8,6 +8,7 @@ import { useQueueStore } from '@/store/queueStore'
 import { useState, useEffect } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import {
   Loader2,
   ArrowRight,
@@ -72,8 +73,16 @@ export function ServiceSelector() {
     try {
       const ticket = await createTicket(category.type, patientName.trim())
       if (ticket) {
+        toast.success(t('ticketGenerated') || "Ticket generated successfully!")
         router.push(`/queue/${ticket.id}`)
+      } else {
+        toast.error(t('generateFailed') || "Failed to generate ticket. Please try again.")
       }
+    } catch (err) {
+      console.error('[ServiceSelector] Generation error:', err)
+      toast.error(t('systemError') || "A system error occurred. Checking local database...")
+      // If navigation failed, try again after a short delay
+      setTimeout(() => router.refresh(), 1000)
     } finally {
       setIsGenerating(false)
     }

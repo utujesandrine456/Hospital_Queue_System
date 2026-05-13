@@ -17,7 +17,6 @@ export function OfflineStatus() {
         window.addEventListener('online', handleStatus)
         window.addEventListener('offline', handleStatus)
 
-        // Check if Service Worker is active
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.ready.then(() => {
                 setIsReady(true)
@@ -50,7 +49,7 @@ export function OfflineStatus() {
                         className="flex items-center gap-2 px-4 py-2 bg-sage/10 text-sage border border-sage/20 rounded-full backdrop-blur-md shadow-sm font-bold text-xs"
                     >
                         <CheckCircle2 size={14} className="text-emerald-500" />
-                        System Offline Ready
+                        Online Mode
                     </motion.div>
                 ) : null}
             </AnimatePresence>
