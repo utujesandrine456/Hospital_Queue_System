@@ -44,7 +44,6 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(request.url);
 
-    // 1. NAVIGATION: Return the Shell (/) for all navigation requests if network fails
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request).catch(() => {
