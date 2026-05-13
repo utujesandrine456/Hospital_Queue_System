@@ -44,7 +44,6 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(request.url);
 
-    // 1. NAVIGATION: Return Shell
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request).catch(() => {
@@ -54,11 +53,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // 2. SMART CACHE: Try cache, fallback to network, then save to cache
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
             if (cachedResponse) {
-                // Return cached, but refresh images in background if online
                 if (url.pathname.startsWith('/images/')) {
                     fetch(request).then(res => {
                         if (res.status === 200) caches.open(CACHE_NAME).then(c => c.put(request, res));
@@ -74,7 +71,6 @@ self.addEventListener('fetch', (event) => {
                 }
                 return networkResponse;
             }).catch(() => {
-                // Ultimate fallback for missing images: return the logo
                 if (url.pathname.startsWith('/images/')) {
                     return caches.match('/images/logo-image.png');
                 }

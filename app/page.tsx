@@ -12,7 +12,7 @@ import { FullScreenLoader } from '@/components/ui/Loader'
 import { useLanguage } from '@/context/LanguageContext'
 import { useQueueStore } from '@/store/queueStore'
 
-import { PublicTicketView } from '@/components/queue/PublicTicketView'
+import { ActiveTicketBanner } from '@/components/queue/ActiveTicketBanner'
 
 export default function HomePage() {
   useNetworkStatus()
@@ -51,17 +51,12 @@ export default function HomePage() {
 
   if (!mounted || showSplash || !hasHydrated) return <FullScreenLoader text={t('preparingExp')} />
 
-  // SINGLE-PAGE FORTRESS: If we have an active ticket, show it directly on the home page
-  // This prevents any offline navigation failures.
-  if (myTicket && myTicket.status !== 'completed' && !viewOverride) {
-    return <PublicTicketView ticketId={myTicket.id} onBack={() => setViewOverride('home')} />
-  }
-
   return (
     <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-20 md:pt-24">
       <Header />
 
       <div className="relative z-10">
+        <ActiveTicketBanner />
         <HeroSection />
 
         <section id="services" className="relative py-12 md:py-24 px-4 md:px-6">

@@ -207,6 +207,8 @@ export const translations: Translations = {
     preparingInterface: { en: "Preparing interface", fr: "Préparation de l'interface", rw: "Gutegura isura ya porogaramu" },
     readyStatus: { en: "Almost ready...", fr: "Presque prêt...", rw: "Bigiye gukunda..." },
     offlineStatus: { en: "Offline Mode", fr: "Mode hors ligne", rw: "Nta Murongo Urahari" },
+    activeTicketBannerTitle: { en: "Active Ticket Found", fr: "Ticket actif trouvé", rw: "Tike yabonetse" },
+    activeTicketBannerAction: { en: "Resume Waiting", fr: "Continuer l'attente", rw: "Komeza utegereje" },
 };
 
 interface LanguageContextType {

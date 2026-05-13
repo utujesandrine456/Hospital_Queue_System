@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { useLanguage } from '@/context/LanguageContext'
+import { useQueueStore } from '@/store/queueStore'
 export function Header() {
     const { isInstalled, promptInstall } = usePWA()
+    const { myTicket } = useQueueStore()
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
@@ -36,10 +38,25 @@ export function Header() {
                 'max-w-7xl mx-auto rounded-full transition-all duration-500 border border-transparent flex items-center justify-between px-6 py-1',
                 isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-2xl shadow-sage/10 border-white/40' : 'bg-transparent'
             )}>
-                <Link href="/" className="flex items-center gap-3 group">
-                    <Image src="/images/logo-image.png" alt="MediQueue Logo" width={56} height={56} className="w-12 h-12 lg:w-14 lg:h-14 object-cover rounded-full" priority />
-                    <span className="text-2xl lg:text-3xl font-black text-sage tracking-tight">MediQueue</span>
-                </Link>
+                <div className="flex items-center gap-4">
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <Image src="/images/logo-image.png" alt="MediQueue Logo" width={56} height={56} className="w-12 h-12 lg:w-14 lg:h-14 object-cover rounded-full" priority />
+                        <span className="text-2xl lg:text-3xl font-black text-sage tracking-tight">MediQueue</span>
+                    </Link>
+
+                    {myTicket && myTicket.status !== 'completed' && (
+                        <Link
+                            href={`/queue/${myTicket.id}`}
+                            className="flex items-center gap-2 px-3 py-1 bg-sage/10 rounded-full text-sage border border-sage/20 hover:bg-sage/20 transition-all group lg:ml-2"
+                        >
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-sage"></span>
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">{t('activeTicketBannerAction')}</span>
+                        </Link>
+                    )}
+                </div>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-6">
