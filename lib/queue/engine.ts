@@ -55,7 +55,6 @@ export function calculateWaitTime(position: number, serviceType: ServiceType): n
         }
       }
     } catch (e) {
-      // fallback applies safely
     }
   }
 

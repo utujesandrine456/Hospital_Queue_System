@@ -60,6 +60,12 @@ export default function QueuePage() {
   }, [ticketId])
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
+  useEffect(() => {
     const updated = allTickets.find(t => t.id === ticketId)
     const freshTicket = updated || (myTicket?.id === ticketId ? myTicket : null)
 
@@ -69,7 +75,19 @@ export default function QueuePage() {
         freshTicket.position < prevPosition.current &&
         freshTicket.position > 0
       ) {
+        // Trigger vibration for turn updates
+        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+          navigator.vibrate([100, 50, 100])
+        }
+
         if (freshTicket.position === 1) {
+          // Browser Notification
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification("MediQueue: It's your turn!", {
+              body: t('nowServing') || "It is your turn! Please proceed to the counter.",
+              icon: '/images/logo-image.png'
+            })
+          }
           toast.success(t('nowServing') || "It is your turn! Please proceed.", { position: 'top-center', duration: 8000 })
         } else {
           toast.info(t('positionUpdated') || `You moved up! You are now number ${freshTicket.position} in queue.`, { position: 'top-center' })
@@ -146,18 +164,6 @@ export default function QueuePage() {
           <div className="space-y-8">
             <TicketCard ticket={ticket} />
           </div>
-
-          {ticket.status === 'completed' && (
-            <div className="mt-8">
-              <button
-                onClick={() => router.push('/')}
-                className="w-full py-5 bg-sage hover:bg-sage/90 text-cream rounded-2xl font-bold text-xl transition-all shadow-xl shadow-sage/20 flex items-center justify-center gap-3 cursor-pointer"
-              >
-                <Ticket size={24} strokeWidth={2.5} />
-                {t('getNewTicket')}
-              </button>
-            </div>
-          )}
 
           {ticket.status !== 'completed' && (
             <div className="text-center mt-6">
