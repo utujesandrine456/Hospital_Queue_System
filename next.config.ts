@@ -11,39 +11,47 @@ module.exports = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
-  buildExcludes: [/middleware-manifest\.json$/],
+  buildExcludes: [/middleware-manifest\.json$/, /_next\/static\/.*\.map$/],
+  cacheOnFrontEndNav: true,
+  reloadOnOnline: true,
   runtimeCaching: [
     {
-      urlPattern: /^https?:\/\/.*\/_next\/static\/.*/,
+      urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname === '/',
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'homepage-cache',
+      },
+    },
+    {
+      urlPattern: /\/_next\/static\/.*/i,
       handler: 'CacheFirst',
       options: {
         cacheName: 'static-assets',
-        expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 60 * 60 },
+        expiration: { maxEntries: 500, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
     {
-      urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/_next/data') || url.pathname.startsWith('/api'),
+      urlPattern: ({ url }) => url.pathname.startsWith('/api') || url.pathname.startsWith('/_next/data'),
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'api-data',
-        networkTimeoutSeconds: 2,
+        cacheName: 'dynamic-data',
+        networkTimeoutSeconds: 5,
       },
     },
     {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
       handler: 'CacheFirst',
       options: {
-        cacheName: 'images',
+        cacheName: 'images-cache',
         expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
     {
-      urlPattern: /.*/,
+      urlPattern: /.*/i,
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'pages-cache',
-        networkTimeoutSeconds: 2,
-        expiration: { maxEntries: 100, maxAgeSeconds: 24 * 60 * 60 },
+        cacheName: 'global-cache',
+        networkTimeoutSeconds: 5,
       },
     },
   ],

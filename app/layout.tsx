@@ -47,12 +47,14 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(
+                  navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(
                     function(registration) {
-                      console.log('Service Worker registration successful with scope: ', registration.scope);
+                      console.log('MediQueue SW Active:', registration.scope);
+                      // Force update if needed
+                      registration.update();
                     },
                     function(err) {
-                      console.log('Service Worker registration failed: ', err);
+                      console.error('MediQueue SW Failed:', err);
                     }
                   );
                 });
@@ -86,6 +88,7 @@ export default function RootLayout({
         />
         <LanguageProvider>
           {children}
+          <OfflineStatus />
         </LanguageProvider>
       </body>
     </html>
