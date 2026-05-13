@@ -12,6 +12,8 @@ import { FullScreenLoader } from '@/components/ui/Loader'
 import { useLanguage } from '@/context/LanguageContext'
 import { useQueueStore } from '@/store/queueStore'
 
+import { PublicTicketView } from '@/components/queue/PublicTicketView'
+
 export default function HomePage() {
   useNetworkStatus()
   const { t } = useLanguage()
@@ -22,13 +24,14 @@ export default function HomePage() {
     restDelta: 0.001
   })
 
-  const { loadFromStorage } = useQueueStore()
+  const { loadFromStorage, myTicket } = useQueueStore()
   const [mounted, setMounted] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
+  const [viewOverride, setViewOverride] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
-    loadFromStorage() // Ensure queue state is fresh
+    loadFromStorage()
     const timer = setTimeout(() => {
       setShowSplash(false)
     }, 1800)
@@ -36,6 +39,12 @@ export default function HomePage() {
   }, [loadFromStorage])
 
   if (!mounted || showSplash) return <FullScreenLoader text={t('preparingExp')} />
+
+  // SINGLE-PAGE FORTRESS: If we have an active ticket, show it directly on the home page
+  // This prevents any offline navigation failures.
+  if (myTicket && myTicket.status !== 'completed' && !viewOverride) {
+    return <PublicTicketView ticketId={myTicket.id} onBack={() => setViewOverride('home')} />
+  }
 
   return (
     <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-20 md:pt-24">
