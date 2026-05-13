@@ -13,20 +13,43 @@ module.exports = withPWA({
   disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
-      urlPattern: /^https:\/\/.*\/_next\/static\/.*/,
+      urlPattern: /^https?:\/\/.*\/_next\/static\/.*/,
       handler: 'CacheFirst',
       options: {
         cacheName: 'static-assets',
-        expiration: { maxEntries: 100, maxAgeSeconds: 7 * 24 * 60 * 60 },
+        expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
     {
-      urlPattern: /^https:\/\/.*/,
+      urlPattern: /^\/(_next\/data|api)\/.*/,
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'hospital-queue-pages',
+        cacheName: 'api-data',
+        networkTimeoutSeconds: 3,
+      },
+    },
+    {
+      urlPattern: /^https?:\/\/.*\/_next\/image\?url=.*/,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'next-images',
+      },
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images',
+        expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
+      },
+    },
+    {
+      urlPattern: /^https?:\/\/.*\/?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'pages-cache',
+        networkTimeoutSeconds: 3, // Fallback to cache after 3s if offline
         expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
-        networkTimeoutSeconds: 10,
       },
     },
   ],

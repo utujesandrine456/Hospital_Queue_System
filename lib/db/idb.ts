@@ -103,3 +103,14 @@ export async function clearOutbox(): Promise<void> {
   const db = await getDB()
   await db.clear('outbox')
 }
+
+export async function clearAllData(): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(['tickets', 'outbox', 'counters'], 'readwrite')
+  await Promise.all([
+    tx.objectStore('tickets').clear(),
+    tx.objectStore('outbox').clear(),
+    tx.objectStore('counters').clear(),
+    tx.done,
+  ])
+}

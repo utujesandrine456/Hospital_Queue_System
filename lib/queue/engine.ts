@@ -33,7 +33,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
     description: 'X-rays, MRI, CT scans and imaging',
     icon: '',
     color: 'sage',
-    avgServiceMinutes: 6,
+    avgServiceMinutes: 1, // Default 1 min
   },
 }
 
@@ -42,23 +42,70 @@ export function calculateWaitTime(position: number, serviceType: ServiceType): n
 
   let avgMinutes = 5
 
-  if (SERVICE_CONFIG[serviceType]) {
-    avgMinutes = SERVICE_CONFIG[serviceType].avgServiceMinutes
-  } else if (typeof window !== 'undefined') {
+  // 1. Check LocalStorage first for dynamic user overrides
+  if (typeof window !== 'undefined') {
     try {
       const stored = window.localStorage.getItem('hospital_services')
       if (stored) {
         const services: ServiceInfo[] = JSON.parse(stored)
         const svc = services.find((s: ServiceInfo) => s.type === serviceType)
         if (svc?.avgServiceMinutes) {
-          avgMinutes = svc.avgServiceMinutes
+          return (position - 1) * svc.avgServiceMinutes
         }
       }
     } catch (e) {
     }
   }
 
+  // 2. Fallback to hardcoded SERVICE_CONFIG
+  if (SERVICE_CONFIG[serviceType]) {
+    avgMinutes = SERVICE_CONFIG[serviceType].avgServiceMinutes
+  }
+
   return (position - 1) * avgMinutes
+}
+
+async function generateSimulatedPatients(
+  serviceType: ServiceType,
+  count: number
+): Promise<QueueTicket[]> {
+  const fakePatients = [
+    'Alice Uwase',
+    'Jean Mugisha',
+    'Kevin Ntwari',
+    'Solange Irakoze',
+    'Hope Uwineza',
+  ]
+  const tickets: QueueTicket[] = []
+  const now = Date.now()
+
+  // Stagger arrival times based on service duration
+  const serviceDurationMinutes = calculateWaitTime(2, serviceType) || 5
+  const serviceDurationMs = serviceDurationMinutes * 60 * 1000
+
+  for (let i = 0; i < count; i++) {
+    const ticketNumber = await getNextTicketNumber(serviceType)
+    // Stagger backwards so they appear to have arrived earlier
+    const createdAt = now - (count - i) * serviceDurationMs
+
+    const ticket: QueueTicket = {
+      id: uuidv4(),
+      ticketNumber,
+      serviceType,
+      status: 'waiting',
+      position: i + 1,
+      estimatedWaitMinutes: calculateWaitTime(i + 1, serviceType),
+      patientName: fakePatients[Math.floor(Math.random() * fakePatients.length)],
+      createdAt,
+      updatedAt: now,
+      servingStartedAt: null,
+      synced: true,
+      isSimulated: true,
+    }
+    tickets.push(ticket)
+  }
+
+  return tickets
 }
 
 
@@ -67,11 +114,19 @@ export async function createNewTicket(
   patientName: string
 ): Promise<QueueTicket> {
   const existingTickets = await getAllTickets()
-  const serviceTickets = existingTickets.filter(
+  let activeServiceTickets = existingTickets.filter(
     t => t.serviceType === serviceType && t.status !== 'completed'
   )
 
-  const position = serviceTickets.length + 1
+  // DEMO MODE: If queue is empty, generate 2-3 simulated patients first
+  if (activeServiceTickets.length === 0) {
+    const count = Math.floor(Math.random() * 2) + 2
+    const fakeOnes = await generateSimulatedPatients(serviceType, count)
+    await saveAllTickets(fakeOnes)
+    activeServiceTickets = [...fakeOnes]
+  }
+
+  const position = activeServiceTickets.length + 1
   const ticketNumber = await getNextTicketNumber(serviceType)
 
   const ticket: QueueTicket = {
@@ -81,9 +136,10 @@ export async function createNewTicket(
     status: 'waiting',
     position,
     estimatedWaitMinutes: calculateWaitTime(position, serviceType),
-    patientName: patientName.trim() || 'Anonymous',
+    patientName: patientName.trim() || 'Anonymous User',
     createdAt: Date.now(),
     updatedAt: Date.now(),
+    servingStartedAt: null,
     synced: false,
     isSimulated: false,
   }
@@ -125,7 +181,7 @@ export async function advanceQueueInDB(serviceType: ServiceType): Promise<QueueT
 
 export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
   const active = tickets
-    .filter(t => t.status !== 'completed')
+    .filter(t => t.status !== 'completed' && t.status !== 'cancelled')
     .sort((a, b) => a.createdAt - b.createdAt)
 
   const grouped: Record<string, QueueTicket[]> = {}
@@ -135,26 +191,46 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
   })
 
   const result: QueueTicket[] = []
+  const now = Date.now()
 
   for (const type in grouped) {
     const list = grouped[type]
-    const avgMinutes = SERVICE_CONFIG[type as ServiceType]?.avgServiceMinutes || 5
-    const maxServiceMs = avgMinutes * 60 * 1000
+
+    const avgMinutes = calculateWaitTime(2, type as ServiceType) || 5
+    const serviceMs = avgMinutes * 60 * 1000
 
     list.forEach((ticket, index) => {
-      const timeSinceCreated = Date.now() - ticket.createdAt
-      const isNewFirst = index === 0 && timeSinceCreated < 4000
+      let status = ticket.status
+      let servingStartedAt = ticket.servingStartedAt
+      let isStale = false
 
-      const isStale = index === 0 && timeSinceCreated > maxServiceMs * 1.1
+      if (index === 0) {
+        status = 'serving'
+
+        if (!servingStartedAt) {
+          servingStartedAt = now
+        }
+        const elapsedSinceServiceStart = now - servingStartedAt
+        if (elapsedSinceServiceStart > serviceMs) {
+          isStale = true
+          status = 'completed'
+        }
+      } else {
+        status = 'waiting'
+        servingStartedAt = null
+      }
 
       result.push({
         ...ticket,
         position: index + 1,
-        status: isStale ? 'completed' : (isNewFirst ? 'waiting' : (index === 0 ? 'serving' : 'waiting')),
+        status: isStale ? 'completed' : status,
+        servingStartedAt,
         estimatedWaitMinutes: calculateWaitTime(index + 1, ticket.serviceType),
+        updatedAt: now,
       })
     })
   }
 
-  return result
+  const terminal = tickets.filter(t => t.status === 'completed' || t.status === 'cancelled')
+  return [...result, ...terminal]
 }

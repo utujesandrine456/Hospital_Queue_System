@@ -56,13 +56,20 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <Toaster
-          position="bottom-center"
+          position="top-right"
+          richColors
+          closeButton
           toastOptions={{
             style: {
-              background: '#1e293b',
-              border: '1px solid #334155',
-              color: '#f1f5f9',
+              background: '#F3EFE3',
+              border: '2px solid #769382',
+              color: '#2C3639',
+              fontFamily: 'var(--font-sen)',
+              borderRadius: '16px',
+              padding: '16px',
+              boxShadow: '0 10px 25px -5px rgba(118, 147, 130, 0.2)',
             },
+            className: 'premium-toast',
           }}
         />
         <LanguageProvider>
@@ -72,3 +79,4 @@ export default function RootLayout({
     </html>
   );
 }
+

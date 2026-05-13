@@ -14,6 +14,7 @@ export interface QueueTicket {
   patientName: string
   createdAt: number
   updatedAt: number
+  servingStartedAt: number | null
   synced: boolean
   isSimulated: boolean
 }
@@ -55,6 +56,7 @@ export interface QueueStoreState {
   addToOutbox: (entry: OutboxEntry) => void
   removeFromOutbox: (id: string) => void
   clearMyTicket: () => void
+  resetSystem: () => Promise<void>
 }
 
 export interface NetworkStoreState {

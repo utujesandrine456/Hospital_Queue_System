@@ -65,38 +65,45 @@ export default function QueuePage() {
     }
   }, [])
 
+  const prevStatus = useRef<string | null>(null)
+
   useEffect(() => {
     const updated = allTickets.find(t => t.id === ticketId)
     const freshTicket = updated || (myTicket?.id === ticketId ? myTicket : null)
 
     if (freshTicket) {
-      if (
-        prevPosition.current !== null &&
-        freshTicket.position < prevPosition.current &&
-        freshTicket.position > 0
-      ) {
-        // Trigger vibration for turn updates
+      const positionChanged = prevPosition.current !== null && freshTicket.position < prevPosition.current && freshTicket.position > 0
+      const statusChanged = prevStatus.current !== null && freshTicket.status !== prevStatus.current
+
+      if (positionChanged || statusChanged) {
+        // Trigger vibration
         if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
           navigator.vibrate([100, 50, 100])
         }
 
-        if (freshTicket.position === 1) {
-          // Browser Notification
+        if (freshTicket.status === 'serving' && (statusChanged || freshTicket.position === 1)) {
           if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification("MediQueue: It's your turn!", {
-              body: t('nowServing') || "It is your turn! Please proceed to the counter.",
+            new Notification(t('yourTurn') || "It's your turn!", {
+              body: t('nowServingDesc') || "A specialist is ready to see you. Please proceed to the service area.",
               icon: '/images/logo-image.png'
             })
           }
-          toast.success(t('nowServing') || "It is your turn! Please proceed.", { position: 'top-center', duration: 8000 })
-        } else {
-          toast.info(t('positionUpdated') || `You moved up! You are now number ${freshTicket.position} in queue.`, { position: 'top-center' })
+          toast.success(t('nowServing') || "It is your turn! Please proceed.", { position: 'top-center', duration: 10000 })
+        } else if (positionChanged) {
+          toast.info(
+            freshTicket.position === 2
+              ? (t('almostTurn') || "You are next in line! Get ready.")
+              : (t('positionUpdated') || `Position updated: You are now #${freshTicket.position}`),
+            { position: 'top-center' }
+          )
         }
       }
       prevPosition.current = freshTicket.position
+      prevStatus.current = freshTicket.status
       setTicket(freshTicket)
     }
   }, [allTickets, myTicket, ticketId, t])
+
 
   const fullQueue = ticket
     ? allTickets.filter(
@@ -108,6 +115,7 @@ export default function QueuePage() {
     return <FullScreenLoader text={t('validatingTicket')} />
   }
 
+  
   if (!ticket) {
     return (
       <main className="min-h-screen bg-cream flex items-center justify-center px-4">

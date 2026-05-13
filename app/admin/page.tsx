@@ -206,13 +206,6 @@ function CommanderTab({ services, allTickets, totalStats, activeService, setActi
             )
           })}
         </div>
-        <button
-          onClick={onAdvance}
-          className="hidden md:flex shrink-0 items-center justify-center gap-2 px-6 py-3 bg-[#2C3639] text-cream hover:bg-sage rounded-2xl font-bold shadow-lg transition-colors"
-        >
-          <Zap size={16} fill="currentColor" />
-          Advance Patient
-        </button>
       </div>
 
       <motion.div layout className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-4xl overflow-hidden shadow-2xl shadow-sage/10 mb-12">
@@ -443,11 +436,12 @@ function ServicesTab({ services, addService, updateService, deleteService }: any
           {isFormOpen ? 'Cancel' : 'New Service'}
         </button>
         <button
-          onClick={() => {
+          onClick={async () => {
             if (confirm('Are you absolutely sure? This will delete ALL patients, tickets, and your custom service configurations.')) {
-              window.indexedDB.deleteDatabase('medi-queue-db');
-              localStorage.clear();
-              window.location.reload();
+              // Use the unified reset system from store
+              const store = useQueueStore.getState();
+              await store.resetSystem();
+              localStorage.clear(); // Safety clear
             }
           }}
           className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-500 rounded-xl font-bold text-sm border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm"

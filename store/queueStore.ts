@@ -69,11 +69,12 @@ export const useQueueStore = create<QueueStoreState>()(
 
           await queueOutboxAction('CREATE_TICKET', ticket)
 
-          const current = get().allTickets
-          set({
-            myTicket: ticket,
-            allTickets: [...current, ticket],
-          })
+          // CRITICAL: Reload from storage to catch simulated patients
+          await get().loadFromStorage()
+
+          // Ensure myTicket is tracked correctly
+          const actualMyTicket = get().allTickets.find(t => t.id === ticket.id) || ticket
+          set({ myTicket: actualMyTicket })
 
           const pendingEntry: OutboxEntry = {
             id: ticket.id,
@@ -159,6 +160,26 @@ export const useQueueStore = create<QueueStoreState>()(
       },
 
       clearMyTicket: () => set({ myTicket: null }),
+
+      resetSystem: async () => {
+        if (typeof window !== 'undefined') {
+          // 1. Clear LocalStorage immediately
+          localStorage.clear()
+
+          // 2. Nuclear delete of IndexedDB
+          try {
+            const { getDB } = await import('@/lib/db/schema')
+            const db = await getDB()
+            db.close() // Close connection to allow deletion
+            window.indexedDB.deleteDatabase('hospital-queue-db')
+          } catch (e) {
+            console.error('Database deletion failed:', e)
+          }
+
+          // 3. Force reload to home
+          window.location.href = '/'
+        }
+      },
     }),
     {
       name: 'hospital-queue-store',

@@ -103,12 +103,27 @@ export function TicketCard({ ticket }: TicketCardProps) {
           </div>
         </div>
 
-        {/* ===== PERFORATED DIVIDER ===== */}
+        {/* ===== PERFORATED DIVIDER / PROGRESS BAR ===== */}
         <div className="relative flex items-center">
           {/* Left notch */}
           <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#F3EFE3] border border-sage/10 z-10" />
-          {/* Dashed line */}
-          <div className="flex-1 mx-6 border-t-2 border-dashed border-sage/20" />
+
+          {/* Progress Bar or Dashed Line */}
+          {isServing && ticket.servingStartedAt ? (
+            <div className="flex-1 mx-6 h-1.5 bg-sage/10 rounded-full overflow-hidden relative">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${Math.min(100, ((Date.now() - ticket.servingStartedAt) / ((SERVICE_CONFIG[ticket.serviceType]?.avgServiceMinutes || 5) * 60 * 1000)) * 100)}%`
+                }}
+                transition={{ duration: 1, ease: 'linear' }}
+                className="h-full bg-emerald-400"
+              />
+            </div>
+          ) : (
+            <div className="flex-1 mx-6 border-t-2 border-dashed border-sage/20" />
+          )}
+
           {/* Right notch */}
           <div className="absolute -right-4 w-8 h-8 rounded-full bg-[#F3EFE3] border border-sage/10 z-10" />
         </div>
