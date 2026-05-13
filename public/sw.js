@@ -1,63 +1,71 @@
+/* MediQueue - Ultimate Resilience SW v6 (The Cure) */
 
-const CACHE_NAME = 'mediqueue-nuclear-v5';
+const CACHE_NAME = 'mediqueue-v6-resilient';
 const OFFLINE_URL = '/';
 
 const PRECACHE_ASSETS = [
     OFFLINE_URL,
     '/manifest.json',
     '/images/logo-image.png',
-    '/favicon.ico',
+    '/images/hero_image_Updated.png',
+    '/globals.css', // Attempt to catch CSS if possible, but the handler will catch it anyway
 ];
 
+// 1. Install Event: Robust asset caching
 self.addEventListener('install', (event) => {
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Nuclear Preloading Active');
-            return cache.addAll(PRECACHE_ASSETS);
-        })
-    );
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(clients.claim());
-    event.waitUntil(
-        caches.keys().then((keys) => {
-            return Promise.all(
-                keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+            console.log('[SW] Resilient Install Started');
+            // Use individual add for each to prevent one 404 from breaking everything
+            return Promise.allSettled(
+                PRECACHE_ASSETS.map(asset =>
+                    cache.add(asset).catch(err => console.warn(`[SW] Failed to precache: ${asset}`, err))
+                )
             );
         })
     );
-    console.log('[SW] Nuclear Control Established');
 });
 
-// 3. Fetch Event: Intercept everything
+// 2. Activate Event: Force control and clean old caches
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        Promise.all([
+            clients.claim(),
+            caches.keys().then((keys) => {
+                return Promise.all(
+                    keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+                );
+            })
+        ])
+    );
+    console.log('[SW] Resilient Control Established');
+});
+
+// 3. Fetch Event: Multi-tier fallback strategy
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
-    // Skip non-GET requests
     if (request.method !== 'GET') return;
 
-    // Handling HTML pages (Navigation)
+    // Navigation: Network-First then Cache-Fallback
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
-                    // If network works, save it and return
                     const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
                     return networkResponse;
                 })
                 .catch(() => {
-                    // If network fails (Offline / ERR_NAME_NOT_RESOLVED), serve from cache
-                    console.log('[SW] Offline detected, serving from nuclear cache');
+                    console.log('[SW] Navigation failed, serving from cache');
                     return caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL));
                 })
         );
         return;
     }
 
-    // Handling Static Assets (JS, CSS, Images)
+    // Assets: Cache-First then Network
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
             if (cachedResponse) return cachedResponse;
@@ -69,7 +77,7 @@ self.addEventListener('fetch', (event) => {
                 caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
                 return networkResponse;
             }).catch(() => {
-                // Return nothing for failed assets to let browser handle it or use a default
+                // Fail silently for non-critical assets
             });
         })
     );

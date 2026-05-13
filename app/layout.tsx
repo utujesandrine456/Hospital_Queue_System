@@ -48,14 +48,21 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
+                  // 1. Force Unregister all legacy workers
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                      registration.unregister();
+                    }
+                  });
+
+                  // 2. Register new Resilient SW
                   navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(
                     function(registration) {
-                      console.log('MediQueue SW Active:', registration.scope);
-                      // Force update if needed
+                      console.log('MediQueue SW V6 Active:', registration.scope);
                       registration.update();
                     },
                     function(err) {
-                      console.error('MediQueue SW Failed:', err);
+                      console.error('MediQueue SW V6 Failed:', err);
                     }
                   );
                 });
