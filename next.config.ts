@@ -18,7 +18,7 @@ module.exports = withPWA({
       handler: 'CacheFirst',
       options: {
         cacheName: 'static-assets',
-        expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
+        expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 60 * 60 },
       },
     },
     {
@@ -26,7 +26,7 @@ module.exports = withPWA({
       handler: 'NetworkFirst',
       options: {
         cacheName: 'api-data',
-        networkTimeoutSeconds: 3,
+        networkTimeoutSeconds: 2,
       },
     },
     {
@@ -42,9 +42,12 @@ module.exports = withPWA({
       handler: 'NetworkFirst',
       options: {
         cacheName: 'pages-cache',
-        networkTimeoutSeconds: 3,
-        expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
+        networkTimeoutSeconds: 2,
+        expiration: { maxEntries: 100, maxAgeSeconds: 24 * 60 * 60 },
       },
     },
   ],
+  fallbacks: {
+    document: '/',
+  }
 })(nextConfig)

@@ -246,9 +246,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage: handleLanguageChange, t }}>
-            <div style={{ visibility: mounted ? 'visible' : 'hidden' }}>
-                {children}
-            </div>
+            {children}
         </LanguageContext.Provider>
     );
 }

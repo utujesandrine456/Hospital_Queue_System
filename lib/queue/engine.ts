@@ -210,6 +210,7 @@ export function recalculatePositions(tickets: QueueTicket[]): QueueTicket[] {
         if (!servingStartedAt) {
           servingStartedAt = now
         }
+        
         const elapsedSinceServiceStart = now - servingStartedAt
         if (elapsedSinceServiceStart > serviceMs) {
           isStale = true
