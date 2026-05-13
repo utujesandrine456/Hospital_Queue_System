@@ -109,7 +109,7 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
                 <div className="max-w-xl mx-auto w-full px-6 py-10 flex-1 flex flex-col justify-center">
                     <button
                         onClick={() => onBack ? onBack() : router.push('/')}
-                        className="flex items-center gap-2 text-sage/50 hover:text-sage text-sm font-bold mb-10 transition-colors"
+                        className="cursor-pointer flex items-center gap-2 text-sage/50 hover:text-sage text-sm font-bold mb-10 transition-colors"
                     >
                         <ArrowLeft size={16} />
                         {t('backToServices')}
