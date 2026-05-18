@@ -16,6 +16,9 @@ import { FullScreenLoader } from '@/components/ui/Loader'
 import { useLanguage } from '@/context/LanguageContext'
 import { toast } from 'sonner'
 
+
+
+
 interface PublicTicketViewProps {
     ticketId: string
     onBack?: () => void

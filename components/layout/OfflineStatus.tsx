@@ -46,9 +46,9 @@ export function OfflineStatus() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center gap-2 px-4 py-2 bg-sage/10 text-sage border border-sage/20 rounded-full backdrop-blur-md shadow-sm font-bold text-xs"
+                        className="flex items-center gap-2 px-4 py-2 bg-sage text-white border border-sage/20 rounded-full backdrop-blur-md shadow-sm font-bold text-xs"
                     >
-                        <CheckCircle2 size={14} className="text-emerald-500" />
+                        <CheckCircle2 size={14} className="text-white" />
                         Online Mode
                     </motion.div>
                 ) : null}

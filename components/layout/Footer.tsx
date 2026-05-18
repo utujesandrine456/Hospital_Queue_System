@@ -38,7 +38,7 @@ export function Footer() {
                     <div className="space-y-8">
                         <h4 className="text-lg font-bold italic">{t('departmentsTitle')}</h4>
                         <nav className="flex flex-col gap-4">
-                            {['opd', 'laboratory', 'pharmacy', 'radiology'].map((item) => (
+                            {['consultation', 'laboratory', 'pharmacy', 'radiology'].map((item) => (
                                 <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
                                     {t(item + 'Title') || item}
                                 </Link>

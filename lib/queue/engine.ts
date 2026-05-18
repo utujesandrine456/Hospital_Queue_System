@@ -84,7 +84,8 @@ async function generateSimulatedPatients(
   const serviceDurationMs = serviceDurationMinutes * 60 * 1000
 
   for (let i = 0; i < count; i++) {
-    const ticketNumber = await getNextTicketNumber(serviceType)
+    const randomNum = Math.floor(Math.random() * 900) + 100
+    const ticketNumber = `DEMO-${randomNum}`
     // Stagger backwards so they appear to have arrived earlier
     const createdAt = now - (count - i) * serviceDurationMs
 
@@ -122,7 +123,6 @@ export async function createNewTicket(
   if (activeServiceTickets.length === 0) {
     const count = Math.floor(Math.random() * 2) + 2
     const fakeOnes = await generateSimulatedPatients(serviceType, count)
-    await saveAllTickets(fakeOnes)
     activeServiceTickets = [...fakeOnes]
   }
 
@@ -248,7 +248,6 @@ export async function ensureQueueHealthy(tickets: QueueTicket[], serviceType: Se
   if (activeForService.length < 3) {
     const countToAdd = 3 - activeForService.length
     const newFakes = await generateSimulatedPatients(serviceType, countToAdd)
-    await saveAllTickets(newFakes)
     return [...tickets, ...newFakes]
   }
 

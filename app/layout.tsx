@@ -56,15 +56,13 @@ export default function RootLayout({
                   });
 
                   // 2. Register new Resilient SW
-                  navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(
-                    function(registration) {
-                      console.log('MediQueue SW V6 Active:', registration.scope);
-                      registration.update();
-                    },
-                    function(err) {
-                      console.error('MediQueue SW V6 Failed:', err);
-                    }
-                  );
+                  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then(function(registration) {
+                      console.log('MediQueue SW Active:', registration.scope);
+                    })
+                    .catch(function(err) {
+                      console.info('MediQueue SW Registration skipped or failed (common in dev):', err);
+                    });
                 });
               }
               window.addEventListener('beforeinstallprompt', (e) => {
@@ -77,31 +75,8 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          toastOptions={{
-            style: {
-              background: '#F3EFE3',
-              border: '2px solid #769382',
-              color: '#2C3639',
-              fontFamily: 'var(--font-sen)',
-              borderRadius: '16px',
-              padding: '16px',
-              boxShadow: '0 10px 25px -5px rgba(118, 147, 130, 0.2)',
-            },
-            className: 'premium-toast',
-          }}
-        />
         <LanguageProvider>
           {children}
-          <div className="fixed bottom-4 left-4 z-50 pointer-events-none">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/40 backdrop-blur-xs border border-sage/10 rounded-full text-[9px] font-bold text-sage/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50 animate-pulse" />
-              DB_READY: ACTIVE_NODE
-            </div>
-          </div>
           <OfflineStatus />
         </LanguageProvider>
       </body>

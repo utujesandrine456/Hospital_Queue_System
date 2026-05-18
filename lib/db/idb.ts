@@ -2,6 +2,7 @@ import { getDB } from './schema'
 import type { QueueTicket, OutboxEntry, ServiceType } from '@/types'
 
 export async function saveTicket(ticket: QueueTicket): Promise<void> {
+  if (ticket.isSimulated) return
   const db = await getDB()
   await db.put('tickets', ticket)
 }
@@ -38,8 +39,9 @@ export async function updateTicketStatus(
 export async function saveAllTickets(tickets: QueueTicket[]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction('tickets', 'readwrite')
+  const persistentTickets = tickets.filter(t => !t.isSimulated)
   await Promise.all([
-    ...tickets.map(ticket => tx.store.put(ticket)),
+    ...persistentTickets.map(ticket => tx.store.put(ticket)),
     tx.done,
   ])
 }
