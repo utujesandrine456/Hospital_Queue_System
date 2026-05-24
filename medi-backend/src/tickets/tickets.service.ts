@@ -1,116 +1,167 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Ticket, TicketStatus } from './entities/ticket.entity';
-import { Department } from '../departments/entities/department.entity';
+import { TicketStatus } from '../common/ticket-status';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
+import { QueueGateway } from './queue.gateway';
+
+const ticketInclude = { department: true } as const;
 
 @Injectable()
 export class TicketsService {
   constructor(
-    @InjectRepository(Ticket) private ticketRepo: Repository<Ticket>,
-    @InjectRepository(Department) private deptRepo: Repository<Department>,
-  ) { }
+    private readonly prisma: PrismaService,
+    private readonly gateway: QueueGateway,
+  ) {}
 
-  async create(dto: CreateTicketDto): Promise<Ticket> {
-    const dept = await this.deptRepo.findOneBy({ id: dto.departmentId });
+  private emitQueueUpdate(departmentId: number) {
+    this.gateway.emitQueueUpdate(departmentId, { departmentId, at: Date.now() });
+  }
+
+  async create(dto: CreateTicketDto) {
+    const dept = await this.prisma.department.findUnique({
+      where: { id: dto.departmentId },
+    });
     if (!dept) throw new NotFoundException('Department not found');
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const count = await this.ticketRepo.count({
-      where: { department: { id: dept.id } },
+    const count = await this.prisma.ticket.count({
+      where: { departmentId: dept.id },
     });
 
     const ticketNumber = `${dept.acronym}-${String(count + 1).padStart(3, '0')}`;
 
-    const waitingCount = await this.ticketRepo.count({
-      where: { department: { id: dept.id }, status: TicketStatus.WAITING },
+    const waitingCount = await this.prisma.ticket.count({
+      where: { departmentId: dept.id, status: TicketStatus.waiting },
     });
 
-    const ticket = this.ticketRepo.create({
-      ticketNumber,
-      department: dept,
-      patientName: dto.patientName,
-      patientPhone: dto.patientPhone,
-      position: waitingCount + 1,
-      status: TicketStatus.WAITING,
+    const saved = await this.prisma.ticket.create({
+      data: {
+        ticketNumber,
+        departmentId: dept.id,
+        patientName: dto.patientName,
+        patientPhone: dto.patientPhone,
+        position: waitingCount + 1,
+        status: TicketStatus.waiting,
+      },
+      include: ticketInclude,
     });
 
-    return this.ticketRepo.save(ticket);
+    this.emitQueueUpdate(dept.id);
+    return saved;
   }
 
-  async getQueue(departmentId: number) {
-    return this.ticketRepo.find({
+  getQueue(departmentId: number) {
+    return this.getActiveByDepartment(departmentId);
+  }
+
+  getActiveByDepartment(departmentId: number) {
+    return this.prisma.ticket.findMany({
       where: {
-        department: { id: departmentId },
-        status: TicketStatus.WAITING,
+        departmentId,
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] },
       },
-      order: { bookedAt: 'ASC' },
+      orderBy: { bookedAt: 'asc' },
+      include: ticketInclude,
+    });
+  }
+
+  getAllActive() {
+    return this.prisma.ticket.findMany({
+      where: {
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] },
+      },
+      orderBy: { bookedAt: 'asc' },
+      include: ticketInclude,
+    });
+  }
+
+  getRecentForAdmin(limit = 200) {
+    return this.prisma.ticket.findMany({
+      include: ticketInclude,
+      orderBy: { bookedAt: 'desc' },
+      take: limit,
     });
   }
 
   async getTicket(id: number) {
-    const ticket = await this.ticketRepo.findOne({
+    const ticket = await this.prisma.ticket.findUnique({
       where: { id },
-      relations: { department: true },
+      include: ticketInclude,
     });
     if (!ticket) throw new NotFoundException('Ticket not found');
     return ticket;
   }
 
-  async callNext(departmentId: number): Promise<Ticket | null> {
-    const serving = await this.ticketRepo.findOne({
-      where: { department: { id: departmentId }, status: TicketStatus.SERVING },
+  async callNext(departmentId: number) {
+    const serving = await this.prisma.ticket.findFirst({
+      where: { departmentId, status: TicketStatus.serving },
     });
+
     if (serving) {
-      serving.status = TicketStatus.DONE;
-      serving.servedAt = new Date();
-      await this.ticketRepo.save(serving);
+      await this.prisma.ticket.update({
+        where: { id: serving.id },
+        data: { status: TicketStatus.done, servedAt: new Date() },
+      });
     }
 
-    // Get next waiting ticket
-    const next = await this.ticketRepo.findOne({
-      where: { department: { id: departmentId }, status: TicketStatus.WAITING },
-      order: { bookedAt: 'ASC' },
+    const next = await this.prisma.ticket.findFirst({
+      where: { departmentId, status: TicketStatus.waiting },
+      orderBy: { bookedAt: 'asc' },
     });
 
-    if (!next) return null;
+    if (!next) {
+      this.emitQueueUpdate(departmentId);
+      return null;
+    }
 
-    next.status = TicketStatus.SERVING;
-    next.position = 0;
-    await this.ticketRepo.save(next);
+    await this.prisma.ticket.update({
+      where: { id: next.id },
+      data: { status: TicketStatus.serving, position: 0 },
+    });
 
-    // Recalculate positions for remaining waiting tickets
     await this.recalculatePositions(departmentId);
+    this.emitQueueUpdate(departmentId);
 
-    return next;
+    return this.getTicket(next.id);
   }
 
   private async recalculatePositions(departmentId: number) {
-    const waiting = await this.ticketRepo.find({
-      where: { department: { id: departmentId }, status: TicketStatus.WAITING },
-      order: { bookedAt: 'ASC' },
+    const waiting = await this.prisma.ticket.findMany({
+      where: { departmentId, status: TicketStatus.waiting },
+      orderBy: { bookedAt: 'asc' },
     });
-    for (let i = 0; i < waiting.length; i++) {
-      waiting[i].position = i + 1;
-    }
-    await this.ticketRepo.save(waiting);
+
+    await Promise.all(
+      waiting.map((ticket, index) =>
+        this.prisma.ticket.update({
+          where: { id: ticket.id },
+          data: { position: index + 1 },
+        }),
+      ),
+    );
   }
 
-  // Admin: cancel a ticket
   async cancel(id: number) {
     const ticket = await this.getTicket(id);
-    ticket.status = TicketStatus.CANCELLED;
-    return this.ticketRepo.save(ticket);
+    const saved = await this.prisma.ticket.update({
+      where: { id },
+      data: { status: TicketStatus.cancelled },
+      include: ticketInclude,
+    });
+    this.emitQueueUpdate(ticket.departmentId);
+    return saved;
   }
 
-  // Stats for admin dashboard
   async getStats(departmentId: number) {
     const [waiting, serving, done] = await Promise.all([
-      this.ticketRepo.count({ where: { department: { id: departmentId }, status: TicketStatus.WAITING } }),
-      this.ticketRepo.count({ where: { department: { id: departmentId }, status: TicketStatus.SERVING } }),
-      this.ticketRepo.count({ where: { department: { id: departmentId }, status: TicketStatus.DONE } }),
+      this.prisma.ticket.count({
+        where: { departmentId, status: TicketStatus.waiting },
+      }),
+      this.prisma.ticket.count({
+        where: { departmentId, status: TicketStatus.serving },
+      }),
+      this.prisma.ticket.count({
+        where: { departmentId, status: TicketStatus.done },
+      }),
     ]);
     return { waiting, serving, done, total: waiting + serving + done };
   }

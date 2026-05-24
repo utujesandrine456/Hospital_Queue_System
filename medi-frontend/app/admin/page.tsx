@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useQueueStore } from '@/store/queueStore'
 import { useServiceStore } from '@/store/serviceStore'
+import { useAuthStore } from '@/store/authStore'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
+import { useQueueSocket } from '@/hooks/useQueueSocket'
+import { AdminLogin } from '@/components/admin/AdminLogin'
 import { formatTime, cn } from '@/lib/utils'
 import type { QueueTicket, ServiceType, ServiceInfo } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -37,17 +40,27 @@ export function getIconForService(service: any) {
 type TabType = 'commander' | 'patients' | 'services'
 
 export default function AdminPage() {
-  const { allTickets, advanceQueue, loadFromStorage, setTicketStatus } = useQueueStore()
+  const { allTickets, advanceQueue, loadFromStorage, setTicketStatus, useApi } = useQueueStore()
   const { services, loadServices, addService, deleteService, updateService } = useServiceStore()
+  const { token, logout } = useAuthStore()
   const [activeTab, setActiveTab] = useState<TabType>('commander')
   const [activeServiceFilter, setActiveServiceFilter] = useState<ServiceType>('consultation')
 
   useNetworkStatus()
+  useQueueSocket()
 
   useEffect(() => {
     loadFromStorage()
     loadServices()
   }, [loadFromStorage, loadServices])
+
+  const pollInterval = useApi ? 8000 : 5000
+  useEffect(() => {
+    const id = setInterval(() => {
+      void loadFromStorage()
+    }, pollInterval)
+    return () => clearInterval(id)
+  }, [loadFromStorage, pollInterval])
 
   const totalStats = {
     total: allTickets.length,
@@ -57,8 +70,16 @@ export default function AdminPage() {
   }
 
   const handleManualAdvance = async () => {
-    advanceQueue(activeServiceFilter)
+    await advanceQueue(activeServiceFilter)
     await loadFromStorage()
+  }
+
+  if (!token) {
+    return (
+      <main className="min-h-screen bg-cream selection:bg-sage/20 px-4 py-16">
+        <AdminLogin />
+      </main>
+    )
   }
 
   return (
@@ -79,7 +100,17 @@ export default function AdminPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 mt-12 md:mt-4">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <h1 className="text-3xl md:text-5xl font-black text-[#2C3639] tracking-tight">System Control</h1>
+            {useApi && (
+              <p className="text-sm font-semibold text-sage mt-2">Connected to server</p>
+            )}
           </motion.div>
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="text-sm font-bold text-sage/60 hover:text-sage px-4 py-2 rounded-xl border border-sage/20"
+          >
+            Sign out
+          </button>
         </div>
 
         {/* Global Nav */}
@@ -176,7 +207,7 @@ function CommanderTab({ services, allTickets, totalStats, activeService, setActi
         ))}
       </div>
 
-      <div className="flex items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
         <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-none flex-1">
           {services.map((service: ServiceInfo) => {
             const Icon = getIconForService(service)
@@ -206,6 +237,14 @@ function CommanderTab({ services, allTickets, totalStats, activeService, setActi
             )
           })}
         </div>
+        <button
+          type="button"
+          onClick={onAdvance}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-[#2C3639] text-cream rounded-2xl font-bold text-sm shadow-xl hover:bg-sage transition-colors shrink-0"
+        >
+          <Zap size={16} strokeWidth={3} />
+          Call next patient
+        </button>
       </div>
 
       <motion.div layout className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-4xl overflow-hidden shadow-2xl shadow-sage/10 mb-12">

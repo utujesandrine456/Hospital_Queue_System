@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id                Int      @id @default(autoincrement())
+  name              String   @unique
+  slug              String   @unique
+  acronym           String   @unique @db.VarChar(3)
+  description       String?
+  avgServiceMinutes Int      @default(5)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  tickets           Ticket[]
+
+  @@map("departments")
+}
+
+enum TicketStatus {
+  waiting
+  serving
+  done
+  cancelled
+}
+
+model Ticket {
+  id           Int          @id @default(autoincrement())
+  ticketNumber String
+  status       TicketStatus @default(waiting)
+  patientName  String?
+  patientPhone String?
+  position     Int          @default(0)
+  bookedAt     DateTime     @default(now())
+  servedAt     DateTime?
+  departmentId Int
+  department   Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}

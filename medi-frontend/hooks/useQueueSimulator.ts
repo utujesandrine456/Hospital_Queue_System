@@ -5,19 +5,18 @@ import { useQueueStore } from '@/store/queueStore'
 import type { ServiceType } from '@/types'
 
 export function useQueueSimulator(serviceType: ServiceType | null) {
-  const { loadFromStorage, myTicket } = useQueueStore()
+  const { syncFromApi, myTicket } = useQueueStore()
 
   useEffect(() => {
     if (!serviceType) return
     if (myTicket?.status === 'completed') return
 
-    const pollIdbSync = async () => {
+    const poll = async () => {
       if (document.hidden) return
-      await loadFromStorage()
+      await syncFromApi()
     }
 
-    const interval = setInterval(pollIdbSync, 5000)
-
+    const interval = setInterval(poll, 4000)
     return () => clearInterval(interval)
-  }, [serviceType, myTicket?.status, loadFromStorage])
+  }, [serviceType, myTicket?.status, syncFromApi])
 }

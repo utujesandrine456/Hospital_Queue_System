@@ -3,6 +3,8 @@ import { Sen } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { OfflineStatus } from "@/components/layout/OfflineStatus";
+import { ApiStatusBanner } from "@/components/layout/ApiStatusBanner";
+import { ClearLegacyCache } from "@/components/layout/ClearLegacyCache";
 
 const sen = Sen({
   variable: "--font-sen",
@@ -80,6 +82,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <LanguageProvider>
+          <ClearLegacyCache />
+          <ApiStatusBanner />
           {children}
           <OfflineStatus />
         </LanguageProvider>

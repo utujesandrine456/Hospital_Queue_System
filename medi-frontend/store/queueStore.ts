@@ -1,9 +1,25 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { getAllTickets, saveTicket, saveAllTickets } from '@/lib/db/idb'
-import { createNewTicket, recalculatePositions, calculateWaitTime } from '@/lib/queue/engine'
-import { queueOutboxAction } from '@/lib/sync/outbox'
-import type { QueueStoreState, QueueTicket, ServiceType, TicketStatus, OutboxEntry } from '@/types'
+import { recalculatePositions } from '@/lib/queue/engine'
+import { checkApiHealth, ApiError } from '@/lib/api/client'
+import { ticketsApi } from '@/lib/api/tickets'
+import { mapTicketFromApi } from '@/lib/api/mappers'
+import { fetchTicketsFromApi } from '@/lib/api/sync'
+import { useServiceStore } from '@/store/serviceStore'
+import { useAuthStore } from '@/store/authStore'
+import type { QueueStoreState, QueueTicket, ServiceType, TicketStatus } from '@/types'
+
+export class BackendUnavailableError extends Error {
+  constructor(message = 'Cannot reach the hospital server. Start medi-backend on port 2000.') {
+    super(message)
+    this.name = 'BackendUnavailableError'
+  }
+}
+
+async function requireApi(): Promise<void> {
+  const ok = await checkApiHealth()
+  if (!ok) throw new BackendUnavailableError()
+}
 
 export const useQueueStore = create<QueueStoreState>()(
   persist(
@@ -13,90 +29,72 @@ export const useQueueStore = create<QueueStoreState>()(
       pendingSync: [],
       isLoading: false,
       isCreating: false,
+      useApi: true,
+      apiError: null as string | null,
 
-      loadFromStorage: async () => {
+      syncFromApi: async () => {
         try {
-          let tickets = await getAllTickets()
-
-          // FULL PWA / DEMO MODE: Refill the queue if it's getting empty
+          await requireApi()
+          const tickets = await fetchTicketsFromApi()
           const myTicket = get().myTicket
-          if (myTicket && myTicket.status !== 'completed') {
-            const { ensureQueueHealthy } = await import('@/lib/queue/engine')
-            tickets = await ensureQueueHealthy(tickets, myTicket.serviceType)
-          }
-
-          const activeTickets = tickets.filter(t => t.status !== 'completed')
-          const recalculated = recalculatePositions(activeTickets)
-          const completed = tickets.filter(t => t.status === 'completed')
-          const allRecalculated = [...recalculated, ...completed]
-
           const updatedMyTicket = myTicket
-            ? allRecalculated.find(t => t.id === myTicket.id) || null
+            ? tickets.find(t => t.id === myTicket.id) ?? myTicket
             : null
 
-          set({
-            allTickets: allRecalculated,
-            myTicket: updatedMyTicket,
-          })
-
-          // CRITICAL: Persist auto-advancements to IndexedDB
-          const hasSignificantChanges = recalculated.some(
-            t => {
-              const old = tickets.find(o => o.id === t.id)
-              return old && (old.status !== t.status || old.position !== t.position)
-            }
-          )
-
-          if (hasSignificantChanges) {
-            await saveAllTickets(allRecalculated)
-          }
+          set({ allTickets: tickets, myTicket: updatedMyTicket, useApi: true, apiError: null })
+          return true
         } catch (err) {
-          console.error('[Store] Failed to load from storage:', err)
+          const message =
+            err instanceof Error ? err.message : 'Failed to load queue from server'
+          set({ apiError: message, useApi: false })
+          console.error('[Store] API sync failed:', err)
+          return false
         }
       },
 
-      initializeQueue: async (serviceType: ServiceType) => {
+      loadFromStorage: async () => {
         set({ isLoading: true })
         try {
-          // In production, we don't generate fake patients anymore
-          await get().loadFromStorage()
-        } catch (err) {
-          console.error('[Store] Failed to initialize queue:', err)
+          await get().syncFromApi()
         } finally {
           set({ isLoading: false })
         }
       },
 
+      initializeQueue: async (_serviceType: ServiceType) => {
+        await get().loadFromStorage()
+      },
+
       createTicket: async (serviceType: ServiceType, patientName: string) => {
         if (get().isCreating) return null
-
-        set({ isCreating: true })
+        set({ isCreating: true, apiError: null })
 
         try {
-          await get().initializeQueue(serviceType)
+          await requireApi()
+          await useServiceStore.getState().loadServices()
 
-          const ticket = await createNewTicket(serviceType, patientName)
-
-          await queueOutboxAction('CREATE_TICKET', ticket)
-
-          // CRITICAL: Reload from storage to catch simulated patients
-          await get().loadFromStorage()
-
-          // Ensure myTicket is tracked correctly
-          const actualMyTicket = get().allTickets.find(t => t.id === ticket.id) || ticket
-          set({ myTicket: actualMyTicket })
-
-          const pendingEntry: OutboxEntry = {
-            id: ticket.id,
-            action: 'CREATE_TICKET',
-            payload: ticket,
-            createdAt: Date.now(),
-            retryCount: 0,
+          const departmentId = useServiceStore.getState().getDepartmentId(serviceType)
+          if (!departmentId) {
+            throw new Error(`No department configured for "${serviceType}". Check PostgreSQL seed data.`)
           }
-          set(state => ({ pendingSync: [...state.pendingSync, pendingEntry] }))
 
+          const apiTicket = await ticketsApi.create({
+            departmentId,
+            patientName: patientName.trim() || 'Anonymous User',
+          })
+
+          const ticket = mapTicketFromApi(apiTicket)
+          set({ myTicket: ticket })
+          await get().syncFromApi()
           return ticket
         } catch (err) {
+          const message =
+            err instanceof ApiError
+              ? err.message
+              : err instanceof Error
+                ? err.message
+                : 'Failed to create ticket'
+          set({ apiError: message })
           console.error('[Store] Failed to create ticket:', err)
           return null
         } finally {
@@ -105,95 +103,50 @@ export const useQueueStore = create<QueueStoreState>()(
       },
 
       advanceQueue: async (serviceType: ServiceType) => {
-        const current = get().allTickets
+        const departmentId = useServiceStore.getState().getDepartmentId(serviceType)
+        const token = useAuthStore.getState().getToken()
 
-        const serviceTickets = current.filter(t => t.serviceType === serviceType)
-        const serving = serviceTickets.find(t => t.position === 1 && !t.isSimulated)
-          || serviceTickets.find(t => t.position === 1)
+        if (!token) throw new Error('Admin sign-in required')
+        if (!departmentId) throw new Error(`Unknown department: ${serviceType}`)
 
-        if (!serving) return
-
-        const now = Date.now()
-
-        const updated = current.map(ticket => {
-          if (ticket.serviceType !== serviceType) return ticket;
-
-          if (ticket.id === serving.id) {
-            return { ...ticket, status: 'completed' as TicketStatus, position: 0, updatedAt: now }
-          }
-          if (ticket.status !== 'completed') {
-            const newPos = ticket.position - 1
-            return {
-              ...ticket,
-              position: newPos,
-              status: newPos === 1 ? 'serving' as TicketStatus : 'waiting' as TicketStatus,
-              updatedAt: now,
-              estimatedWaitMinutes: calculateWaitTime(newPos, ticket.serviceType),
-            }
-          }
-          return ticket
-        })
-
-        const currentMyTicket = get().myTicket
-        const updatedMyTicket = currentMyTicket
-          ? updated.find(t => t.id === currentMyTicket.id) ?? currentMyTicket
-          : null
-
-        set({ allTickets: updated, myTicket: updatedMyTicket })
-
-        await saveAllTickets(updated)
+        await requireApi()
+        await ticketsApi.callNext(departmentId, token)
+        await get().syncFromApi()
       },
 
       setTicketStatus: async (id: string, status: TicketStatus) => {
-        const updated = get().allTickets.map(t =>
-          t.id === id ? { ...t, status, updatedAt: Date.now() } : t
-        )
-        const myTicket = get().myTicket
-        set({
-          allTickets: updated,
-          myTicket: myTicket?.id === id
-            ? { ...myTicket, status, updatedAt: Date.now() }
-            : myTicket,
-        })
-        const ticket = updated.find(t => t.id === id)
-        if (ticket) await saveTicket(ticket)
+        const token = useAuthStore.getState().getToken()
+        const numericId = Number(id)
+
+        if (status === 'cancelled' && token && !Number.isNaN(numericId)) {
+          await requireApi()
+          await ticketsApi.cancel(numericId, token)
+          await get().syncFromApi()
+        }
       },
 
-      addToOutbox: (entry: OutboxEntry) => {
-        set(state => ({ pendingSync: [...state.pendingSync, entry] }))
-      },
+      addToOutbox: () => {},
 
-      removeFromOutbox: (id: string) => {
-        set(state => ({
-          pendingSync: state.pendingSync.filter(e => e.id !== id),
-        }))
-      },
+      removeFromOutbox: () => {},
 
       clearMyTicket: () => set({ myTicket: null }),
 
       resetSystem: async () => {
         if (typeof window !== 'undefined') {
-          // 1. Clear LocalStorage immediately
           localStorage.clear()
-
-          // 2. Nuclear delete of IndexedDB
+          sessionStorage.clear()
           try {
-            const { getDB } = await import('@/lib/db/schema')
-            const db = await getDB()
-            db.close() // Close connection to allow deletion
             window.indexedDB.deleteDatabase('hospital-queue-db')
-          } catch (e) {
-            console.error('Database deletion failed:', e)
+          } catch {
+            /* legacy cache */
           }
-
-          // 3. Force reload to home
           window.location.href = '/'
         }
       },
     }),
     {
       name: 'hospital-queue-store',
-      partialize: (state) => ({ myTicket: state.myTicket }),
-    }
-  )
+      partialize: state => ({ myTicket: state.myTicket }),
+    },
+  ),
 )

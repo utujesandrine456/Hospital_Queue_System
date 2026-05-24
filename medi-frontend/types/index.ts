@@ -35,6 +35,7 @@ export interface ServiceInfo {
   icon: string
   color: string
   avgServiceMinutes: number
+  departmentId?: number
 }
 
 export interface ServiceCounter {
@@ -53,6 +54,9 @@ export interface QueueStoreState {
   advanceQueue: (serviceType: ServiceType) => Promise<void>
   setTicketStatus: (id: string, status: TicketStatus) => void
   loadFromStorage: () => Promise<void>
+  syncFromApi: () => Promise<boolean>
+  useApi: boolean
+  apiError: string | null
   addToOutbox: (entry: OutboxEntry) => void
   removeFromOutbox: (id: string) => void
   clearMyTicket: () => void
