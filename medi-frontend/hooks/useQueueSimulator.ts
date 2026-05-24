@@ -16,7 +16,7 @@ export function useQueueSimulator(serviceType: ServiceType | null) {
       await syncFromApi()
     }
 
-    const interval = setInterval(poll, 4000)
+    const interval = setInterval(poll, 3000)
     return () => clearInterval(interval)
   }, [serviceType, myTicket?.status, syncFromApi])
 }

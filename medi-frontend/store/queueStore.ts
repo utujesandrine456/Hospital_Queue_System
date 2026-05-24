@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { recalculatePositions } from '@/lib/queue/engine'
 import { checkApiHealth, ApiError } from '@/lib/api/client'
 import { ticketsApi } from '@/lib/api/tickets'
 import { mapTicketFromApi } from '@/lib/api/mappers'
@@ -84,8 +83,11 @@ export const useQueueStore = create<QueueStoreState>()(
           })
 
           const ticket = mapTicketFromApi(apiTicket)
-          set({ myTicket: ticket })
-          await get().syncFromApi()
+          const synced = await get().syncFromApi()
+          const allTickets = synced
+            ? get().allTickets
+            : [...get().allTickets.filter(t => t.id !== ticket.id), ticket]
+          set({ myTicket: ticket, allTickets })
           return ticket
         } catch (err) {
           const message =

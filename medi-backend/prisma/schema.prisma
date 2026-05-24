@@ -35,9 +35,10 @@ model Ticket {
   patientName  String?
   patientPhone String?
   position     Int          @default(0)
-  bookedAt     DateTime     @default(now())
-  servedAt     DateTime?
-  departmentId Int
+  bookedAt          DateTime     @default(now())
+  servingStartedAt  DateTime?
+  servedAt          DateTime?
+  departmentId      Int
   department   Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
   @@map("tickets")

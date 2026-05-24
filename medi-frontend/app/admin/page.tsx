@@ -6,7 +6,7 @@ import { useServiceStore } from '@/store/serviceStore'
 import { useAuthStore } from '@/store/authStore'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useQueueSocket } from '@/hooks/useQueueSocket'
-import { AdminLogin } from '@/components/admin/AdminLogin'
+import { useRouter } from 'next/navigation'
 import { formatTime, cn } from '@/lib/utils'
 import type { QueueTicket, ServiceType, ServiceInfo } from '@/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -40,6 +40,7 @@ export function getIconForService(service: any) {
 type TabType = 'commander' | 'patients' | 'services'
 
 export default function AdminPage() {
+  const router = useRouter()
   const { allTickets, advanceQueue, loadFromStorage, setTicketStatus, useApi } = useQueueStore()
   const { services, loadServices, addService, deleteService, updateService } = useServiceStore()
   const { token, logout } = useAuthStore()
@@ -48,6 +49,10 @@ export default function AdminPage() {
 
   useNetworkStatus()
   useQueueSocket()
+
+  useEffect(() => {
+    if (!token) router.replace('/login')
+  }, [token, router])
 
   useEffect(() => {
     loadFromStorage()
@@ -75,11 +80,7 @@ export default function AdminPage() {
   }
 
   if (!token) {
-    return (
-      <main className="min-h-screen bg-cream selection:bg-sage/20 px-4 py-16">
-        <AdminLogin />
-      </main>
-    )
+    return null
   }
 
   return (

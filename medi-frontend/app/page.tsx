@@ -13,6 +13,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useQueueStore } from '@/store/queueStore'
 import { AboutSection } from '@/components/home/AboutSection'
 import { ActiveTicketBanner } from '@/components/queue/ActiveTicketBanner'
+import { cn } from '@/lib/utils'
 
 export default function HomePage() {
   useNetworkStatus()
@@ -25,10 +26,12 @@ export default function HomePage() {
   })
 
   const { loadFromStorage, myTicket } = useQueueStore()
+  const showTicketBanner =
+    myTicket && myTicket.status !== 'completed' && myTicket.status !== 'cancelled'
   const [mounted, setMounted] = useState(false)
   const [hasHydrated, setHasHydrated] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
-  const [viewOverride, setViewOverride] = useState<string | null>(null)
+
 
   useEffect(() => {
     setMounted(true)
@@ -51,7 +54,12 @@ export default function HomePage() {
   if (!mounted || showSplash || !hasHydrated) return <FullScreenLoader text={t('preparingExp')} />
 
   return (
-    <main className="min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden pt-20 md:pt-24">
+    <main
+      className={cn(
+        'min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden transition-[padding] duration-500',
+        showTicketBanner ? 'pt-44 md:pt-48' : 'pt-24 md:pt-28',
+      )}
+    >
       <Header />
 
       <div className="relative z-10">

@@ -26,9 +26,21 @@ export function mapTicketFromApi(ticket: ApiTicket): QueueTicket {
     status === 'serving' ? 1 : status === 'completed' || status === 'cancelled' ? 0 : Math.max(1, ticket.position)
 
   const createdAt = new Date(ticket.bookedAt).getTime()
+  const servingStartedAt = ticket.servingStartedAt
+    ? new Date(ticket.servingStartedAt).getTime()
+    : status === 'serving'
+      ? createdAt
+      : null
   const updatedAt = ticket.servedAt
     ? new Date(ticket.servedAt).getTime()
-    : createdAt
+    : servingStartedAt ?? createdAt
+
+  const estimatedWaitMinutes =
+    status === 'serving'
+      ? 0
+      : status === 'waiting' && position === 1
+        ? 0
+        : calculateWaitTime(position, serviceType)
 
   return {
     id: String(ticket.id),
@@ -36,11 +48,11 @@ export function mapTicketFromApi(ticket: ApiTicket): QueueTicket {
     serviceType,
     status,
     position,
-    estimatedWaitMinutes: calculateWaitTime(position, serviceType),
+    estimatedWaitMinutes,
     patientName: ticket.patientName?.trim() || 'Anonymous User',
     createdAt,
     updatedAt,
-    servingStartedAt: status === 'serving' ? updatedAt : null,
+    servingStartedAt,
     synced: true,
     isSimulated: false,
   }

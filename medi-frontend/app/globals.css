@@ -7,6 +7,9 @@
   --warm-beige: #E6E1D3;
   --soft-gray: #C0C3B9;
   --cream: #F3EFE3;
+  /* Fixed header clearance for stacked notifications */
+  --header-height: 5.75rem;
+  --notification-top: calc(var(--header-height) + 0.75rem);
 }
 
 @theme inline {

@@ -17,6 +17,77 @@ export class TicketsService {
     this.gateway.emitQueueUpdate(departmentId, { departmentId, at: Date.now() });
   }
 
+
+  private async processDepartmentQueue(departmentId: number): Promise<void> {
+    const dept = await this.prisma.department.findUnique({
+      where: { id: departmentId },
+    });
+    const serviceMs = (dept?.avgServiceMinutes ?? 5) * 60 * 1000;
+    const now = new Date();
+    let changed = false;
+
+    const serving = await this.prisma.ticket.findFirst({
+      where: { departmentId, status: TicketStatus.serving },
+    });
+
+    if (serving) {
+      const startedAt = serving.servingStartedAt ?? serving.bookedAt;
+      const elapsed = now.getTime() - new Date(startedAt).getTime();
+
+      if (elapsed >= serviceMs) {
+        await this.prisma.ticket.update({
+          where: { id: serving.id },
+          data: { status: TicketStatus.done, servedAt: now },
+        });
+        changed = true;
+      }
+    }
+
+    const stillServing = changed
+      ? null
+      : await this.prisma.ticket.findFirst({
+          where: { departmentId, status: TicketStatus.serving },
+        });
+
+    if (!stillServing) {
+      const next = await this.prisma.ticket.findFirst({
+        where: { departmentId, status: TicketStatus.waiting },
+        orderBy: { bookedAt: 'asc' },
+      });
+
+      if (next) {
+        await this.prisma.ticket.update({
+          where: { id: next.id },
+          data: {
+            status: TicketStatus.serving,
+            position: 0,
+            servingStartedAt: new Date() as Date,
+          },
+        });
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await this.recalculatePositions(departmentId);
+      this.emitQueueUpdate(departmentId);
+    }
+  }
+
+  private async processAllActiveDepartments(): Promise<void> {
+    const rows = await this.prisma.ticket.findMany({
+      where: {
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] },
+      },
+      select: { departmentId: true },
+      distinct: ['departmentId'],
+    });
+
+    for (const { departmentId } of rows) {
+      await this.processDepartmentQueue(departmentId);
+    }
+  }
+
   async create(dto: CreateTicketDto) {
     const dept = await this.prisma.department.findUnique({
       where: { id: dto.departmentId },
@@ -45,11 +116,12 @@ export class TicketsService {
       include: ticketInclude,
     });
 
-    this.emitQueueUpdate(dept.id);
-    return saved;
+    await this.processDepartmentQueue(dept.id);
+    return this.getTicket(saved.id);
   }
 
-  getQueue(departmentId: number) {
+  async getQueue(departmentId: number) {
+    await this.processDepartmentQueue(departmentId);
     return this.getActiveByDepartment(departmentId);
   }
 
@@ -64,7 +136,8 @@ export class TicketsService {
     });
   }
 
-  getAllActive() {
+  async getAllActive() {
+    await this.processAllActiveDepartments();
     return this.prisma.ticket.findMany({
       where: {
         status: { in: [TicketStatus.waiting, TicketStatus.serving] },
@@ -88,7 +161,15 @@ export class TicketsService {
       include: ticketInclude,
     });
     if (!ticket) throw new NotFoundException('Ticket not found');
-    return ticket;
+
+    await this.processDepartmentQueue(ticket.departmentId);
+
+    const refreshed = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: ticketInclude,
+    });
+    if (!refreshed) throw new NotFoundException('Ticket not found');
+    return refreshed;
   }
 
   async callNext(departmentId: number) {
@@ -109,13 +190,18 @@ export class TicketsService {
     });
 
     if (!next) {
+      await this.recalculatePositions(departmentId);
       this.emitQueueUpdate(departmentId);
       return null;
     }
 
     await this.prisma.ticket.update({
       where: { id: next.id },
-      data: { status: TicketStatus.serving, position: 0 },
+      data: {
+        status: TicketStatus.serving,
+        position: 0,
+        servingStartedAt: new Date(),
+      },
     });
 
     await this.recalculatePositions(departmentId);
@@ -141,13 +227,18 @@ export class TicketsService {
   }
 
   async cancel(id: number) {
-    const ticket = await this.getTicket(id);
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: ticketInclude,
+    });
+    if (!ticket) throw new NotFoundException('Ticket not found');
+
     const saved = await this.prisma.ticket.update({
       where: { id },
       data: { status: TicketStatus.cancelled },
       include: ticketInclude,
     });
-    this.emitQueueUpdate(ticket.departmentId);
+    await this.processDepartmentQueue(ticket.departmentId);
     return saved;
   }
 

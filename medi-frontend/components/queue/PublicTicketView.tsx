@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueueStore } from '@/store/queueStore'
+import { useServiceStore } from '@/store/serviceStore'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useQueueSimulator } from '@/hooks/useQueueSimulator'
 import { useQueueSocket } from '@/hooks/useQueueSocket'
 import { ticketsApi } from '@/lib/api/tickets'
 import { mapTicketFromApi } from '@/lib/api/mappers'
+import { fetchDepartmentQueue, mergeServiceQueue } from '@/lib/api/sync'
 import { TicketCard } from '@/components/queue/TicketCard'
 import { QueueStatus } from '@/components/queue/QueueStatus'
 import { WaitingList } from '@/components/queue/WaitingList'
@@ -26,8 +28,10 @@ interface PublicTicketViewProps {
 export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
   const router = useRouter()
   const { t } = useLanguage()
-  const { allTickets, myTicket, loadFromStorage, apiError } = useQueueStore()
+  const { allTickets, myTicket, syncFromApi, apiError } = useQueueStore()
+  const loadServices = useServiceStore(s => s.loadServices)
   const [ticket, setTicket] = useState<QueueTicket | null>(null)
+  const [departmentQueue, setDepartmentQueue] = useState<QueueTicket[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const prevPosition = useRef<number | null>(null)
   const prevStatus = useRef<string | null>(null)
@@ -36,15 +40,39 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
   useQueueSocket()
   useQueueSimulator(ticket?.serviceType ?? null)
 
+  const refreshQueue = useCallback(async (current: QueueTicket) => {
+    await useServiceStore.getState().loadServices()
+    const departmentId = useServiceStore
+      .getState()
+      .getDepartmentId(current.serviceType)
+
+    if (departmentId) {
+      try {
+        const queue = await fetchDepartmentQueue(departmentId)
+        setDepartmentQueue(queue)
+        return
+      } catch (err) {
+        console.warn('[PublicTicketView] Department queue fetch failed:', err)
+      }
+    }
+
+    const { allTickets: storeTickets } = useQueueStore.getState()
+    setDepartmentQueue(mergeServiceQueue(storeTickets, current))
+  }, [])
+
   useEffect(() => {
+    let cancelled = false
+
     const loadTicket = async () => {
       setIsLoading(true)
       try {
-        await loadFromStorage()
+        await loadServices()
+        await syncFromApi()
 
+        const state = useQueueStore.getState()
         let loaded =
-          allTickets.find(t => t.id === ticketId) ||
-          (myTicket?.id === ticketId ? myTicket : null)
+          state.allTickets.find(t => t.id === ticketId) ||
+          (state.myTicket?.id === ticketId ? state.myTicket : null)
 
         if (!loaded) {
           const numericId = Number(ticketId)
@@ -54,62 +82,73 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
           }
         }
 
-        if (loaded) {
-          setTicket(loaded)
-          prevPosition.current = loaded.position
-        }
+        if (cancelled || !loaded) return
+
+        setTicket(loaded)
+        prevPosition.current = loaded.position
+        prevStatus.current = loaded.status
+        await refreshQueue(loaded)
       } catch (err) {
         console.error('[PublicTicketView] Load error:', err)
       } finally {
-        setIsLoading(false)
+        if (!cancelled) setIsLoading(false)
       }
     }
-    loadTicket()
-  }, [ticketId, loadFromStorage])
+
+    void loadTicket()
+    return () => {
+      cancelled = true
+    }
+  }, [ticketId, syncFromApi, loadServices, refreshQueue])
 
   useEffect(() => {
-    const updated = allTickets.find(t => t.id === ticketId)
-    const freshTicket = updated || (myTicket?.id === ticketId ? myTicket : null)
+    const updated =
+      allTickets.find(t => t.id === ticketId) ||
+      (myTicket?.id === ticketId ? myTicket : null)
 
-    if (freshTicket) {
-      const positionChanged =
-        prevPosition.current !== null &&
-        freshTicket.position < prevPosition.current &&
-        freshTicket.position > 0
-      const statusChanged =
-        prevStatus.current !== null && freshTicket.status !== prevStatus.current
+    if (!updated) return
 
-      if (positionChanged || statusChanged) {
-        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-          navigator.vibrate([100, 50, 100])
-        }
+    const positionChanged =
+      prevPosition.current !== null &&
+      updated.position < prevPosition.current &&
+      updated.position > 0
+    const statusChanged =
+      prevStatus.current !== null && updated.status !== prevStatus.current
 
-        if (
-          freshTicket.status === 'serving' &&
-          (statusChanged || freshTicket.position === 1)
-        ) {
-          toast.success(t('nowServing') || 'It is your turn! Please proceed.', {
-            position: 'top-center',
-            duration: 10000,
-          })
-        } else if (positionChanged) {
-          toast.info(
-            t('positionUpdated') || `Position updated: #${freshTicket.position}`,
-            { position: 'top-center' },
-          )
-        }
+    if (positionChanged || statusChanged) {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([100, 50, 100])
       }
-      prevPosition.current = freshTicket.position
-      prevStatus.current = freshTicket.status
-      setTicket(freshTicket)
-    }
-  }, [allTickets, myTicket, ticketId, t])
 
-  const fullQueue = ticket
-    ? allTickets.filter(
-        t => t.serviceType === ticket.serviceType && t.status !== 'completed',
-      )
-    : []
+      if (
+        updated.status === 'serving' &&
+        (statusChanged || updated.position === 1)
+      ) {
+        toast.success(t('nowServing') || 'It is your turn! Please proceed.', {
+          position: 'top-center',
+          duration: 10000,
+        })
+      } else if (positionChanged) {
+        toast.info(
+          t('positionUpdated') || `Position updated: #${updated.position}`,
+          { position: 'top-center' },
+        )
+      }
+    }
+
+    prevPosition.current = updated.position
+    prevStatus.current = updated.status
+    setTicket(updated)
+    void refreshQueue(updated)
+  }, [allTickets, myTicket, ticketId, t, refreshQueue])
+
+  const serviceQueue = useMemo(() => {
+    if (!ticket) return []
+    if (departmentQueue.length > 0) {
+      return mergeServiceQueue(departmentQueue, ticket)
+    }
+    return mergeServiceQueue(allTickets, ticket)
+  }, [ticket, departmentQueue, allTickets])
 
   if (isLoading) return <FullScreenLoader text={t('validatingTicket')} />
 
@@ -149,10 +188,10 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
 
       <div className="flex-1 h-full lg:overflow-y-auto z-10 p-6 lg:p-12">
         <div className="max-w-2xl mx-auto">
-          {fullQueue.length > 0 ? (
+          {serviceQueue.length > 0 ? (
             <div className="space-y-10">
-              <QueueStatus ticket={ticket} totalInQueue={fullQueue.length} />
-              <WaitingList tickets={fullQueue} currentUserTicketId={ticket.id} />
+              <QueueStatus ticket={ticket} totalInQueue={serviceQueue.length} />
+              <WaitingList tickets={serviceQueue} currentUserTicketId={ticket.id} />
             </div>
           ) : (
             <div className="text-center py-20">

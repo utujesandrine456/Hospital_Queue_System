@@ -55,6 +55,9 @@ export function Footer() {
                                     {item}
                                 </Link>
                             ))}
+                            <Link href="/login" className="text-sm font-bold text-sage/60 hover:text-cream hover:ml-2 transition-all duration-300">
+                                Staff sign in
+                            </Link>
                         </nav>
                     </div>
 

@@ -19,6 +19,7 @@ export interface ApiTicket {
   patientPhone?: string | null
   position: number
   bookedAt: string
+  servingStartedAt?: string | null
   servedAt?: string | null
   department: ApiDepartment
 }
