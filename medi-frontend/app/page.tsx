@@ -57,7 +57,7 @@ export default function HomePage() {
     <main
       className={cn(
         'min-h-screen bg-[#F3EFE3] selection:bg-sage/20 overflow-x-hidden transition-[padding] duration-500',
-        showTicketBanner ? 'pt-44 md:pt-48' : 'pt-24 md:pt-28',
+        showTicketBanner ? 'pt-20 md:pt-26' : 'pt-24 md:pt-28',
       )}
     >
       <Header />

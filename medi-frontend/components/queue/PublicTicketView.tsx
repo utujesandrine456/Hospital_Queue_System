@@ -7,8 +7,7 @@ import { useServiceStore } from '@/store/serviceStore'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useQueueSimulator } from '@/hooks/useQueueSimulator'
 import { useQueueSocket } from '@/hooks/useQueueSocket'
-import { ticketsApi } from '@/lib/api/tickets'
-import { mapTicketFromApi } from '@/lib/api/mappers'
+import { resolveTicketById, resolveTicketFromStore } from '@/lib/api/loadTicket'
 import { fetchDepartmentQueue, mergeServiceQueue } from '@/lib/api/sync'
 import { TicketCard } from '@/components/queue/TicketCard'
 import { QueueStatus } from '@/components/queue/QueueStatus'
@@ -28,11 +27,15 @@ interface PublicTicketViewProps {
 export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
   const router = useRouter()
   const { t } = useLanguage()
-  const { allTickets, myTicket, syncFromApi, apiError } = useQueueStore()
-  const loadServices = useServiceStore(s => s.loadServices)
-  const [ticket, setTicket] = useState<QueueTicket | null>(null)
+  const allTickets = useQueueStore(s => s.allTickets)
+  const myTicket = useQueueStore(s => s.myTicket)
+  const syncFromApi = useQueueStore(s => s.syncFromApi)
+  const apiError = useQueueStore(s => s.apiError)
+  const [ticket, setTicket] = useState<QueueTicket | null>(() =>
+    resolveTicketFromStore(ticketId),
+  )
   const [departmentQueue, setDepartmentQueue] = useState<QueueTicket[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => !resolveTicketFromStore(ticketId))
   const prevPosition = useRef<number | null>(null)
   const prevStatus = useRef<string | null>(null)
 
@@ -41,19 +44,19 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
   useQueueSimulator(ticket?.serviceType ?? null)
 
   const refreshQueue = useCallback(async (current: QueueTicket) => {
-    await useServiceStore.getState().loadServices()
-    const departmentId = useServiceStore
-      .getState()
-      .getDepartmentId(current.serviceType)
+    try {
+      await useServiceStore.getState().loadServices()
+      const departmentId = useServiceStore
+        .getState()
+        .getDepartmentId(current.serviceType)
 
-    if (departmentId) {
-      try {
+      if (departmentId) {
         const queue = await fetchDepartmentQueue(departmentId)
         setDepartmentQueue(queue)
         return
-      } catch (err) {
-        console.warn('[PublicTicketView] Department queue fetch failed:', err)
       }
+    } catch (err) {
+      console.warn('[PublicTicketView] Department queue fetch failed:', err)
     }
 
     const { allTickets: storeTickets } = useQueueStore.getState()
@@ -61,45 +64,61 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
   }, [])
 
   useEffect(() => {
+    const unsub = useQueueStore.persist.onFinishHydration(() => {
+      const hydrated = resolveTicketFromStore(ticketId)
+      if (!hydrated) return
+      setTicket(hydrated)
+      prevPosition.current = hydrated.position
+      prevStatus.current = hydrated.status
+      setIsLoading(false)
+      void refreshQueue(hydrated)
+    })
+    return unsub
+  }, [ticketId, refreshQueue])
+
+  useEffect(() => {
     let cancelled = false
 
-    const loadTicket = async () => {
-      setIsLoading(true)
-      try {
-        await loadServices()
-        await syncFromApi()
-
-        const state = useQueueStore.getState()
-        let loaded =
-          state.allTickets.find(t => t.id === ticketId) ||
-          (state.myTicket?.id === ticketId ? state.myTicket : null)
-
-        if (!loaded) {
-          const numericId = Number(ticketId)
-          if (!Number.isNaN(numericId)) {
-            const apiTicket = await ticketsApi.getById(numericId)
-            loaded = mapTicketFromApi(apiTicket)
-          }
-        }
-
-        if (cancelled || !loaded) return
-
-        setTicket(loaded)
-        prevPosition.current = loaded.position
-        prevStatus.current = loaded.status
-        await refreshQueue(loaded)
-      } catch (err) {
-        console.error('[PublicTicketView] Load error:', err)
-      } finally {
-        if (!cancelled) setIsLoading(false)
+    const run = async () => {
+      const cached = resolveTicketFromStore(ticketId)
+      if (cached) {
+        setTicket(cached)
+        prevPosition.current = cached.position
+        prevStatus.current = cached.status
+        setIsLoading(false)
+        void refreshQueue(cached)
+      } else {
+        setIsLoading(true)
       }
+
+      const resolved = await resolveTicketById(ticketId)
+      if (cancelled) return
+
+      if (resolved) {
+        setTicket(resolved)
+        prevPosition.current = resolved.position
+        prevStatus.current = resolved.status
+        void refreshQueue(resolved)
+      }
+
+      if (!cancelled) setIsLoading(false)
+
+      void syncFromApi().then(() => {
+        if (cancelled) return
+        const refreshed = resolveTicketFromStore(ticketId)
+        if (refreshed) {
+          setTicket(refreshed)
+          void refreshQueue(refreshed)
+        }
+      })
     }
 
-    void loadTicket()
+    void run()
+
     return () => {
       cancelled = true
     }
-  }, [ticketId, syncFromApi, loadServices, refreshQueue])
+  }, [ticketId, syncFromApi, refreshQueue])
 
   useEffect(() => {
     const updated =
@@ -150,7 +169,9 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
     return mergeServiceQueue(allTickets, ticket)
   }, [ticket, departmentQueue, allTickets])
 
-  if (isLoading) return <FullScreenLoader text={t('validatingTicket')} />
+  if (isLoading && !ticket) {
+    return <FullScreenLoader text={t('validatingTicket')} />
+  }
 
   if (!ticket) {
     return (
@@ -161,6 +182,7 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
             <p className="text-sm text-red-600 font-medium">{apiError}</p>
           )}
           <button
+            type="button"
             onClick={() => (onBack ? onBack() : router.push('/'))}
             className="text-sage font-bold"
           >
@@ -176,6 +198,7 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
       <div className="relative w-full lg:w-1/2 lg:h-screen border-r border-sage/10 z-10 flex flex-col backdrop-blur-md bg-white/20">
         <div className="max-w-xl mx-auto w-full px-6 py-10 flex-1 flex flex-col justify-center">
           <button
+            type="button"
             onClick={() => (onBack ? onBack() : router.push('/'))}
             className="cursor-pointer flex items-center gap-2 text-sage/50 hover:text-sage text-sm font-bold mb-10 transition-colors"
           >

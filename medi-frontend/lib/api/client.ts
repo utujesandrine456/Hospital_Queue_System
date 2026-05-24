@@ -1,5 +1,7 @@
 import { API_BASE_URL } from './config'
 
+const DEFAULT_TIMEOUT_MS = 12_000
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -14,23 +16,51 @@ export class ApiError extends Error {
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
   token?: string | null
+  timeoutMs?: number
+}
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(url, { ...init, signal: controller.signal })
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new ApiError(
+        'Request timed out. Is medi-backend running on port 2000?',
+        408,
+      )
+    }
+    throw err
+  } finally {
+    clearTimeout(timeoutId)
+  }
 }
 
 export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { body, token, headers, ...rest } = options
+  const { body, token, headers, timeoutMs = DEFAULT_TIMEOUT_MS, ...rest } = options
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    ...rest,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
+  const res = await fetchWithTimeout(
+    `${API_BASE_URL}${path}`,
+    {
+      ...rest,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  })
+    timeoutMs,
+  )
 
   if (!res.ok) {
     let detail: unknown
@@ -56,10 +86,11 @@ export async function apiRequest<T>(
 
 export async function checkApiHealth(): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE_URL}/health`, {
-      method: 'GET',
-      cache: 'no-store',
-    })
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}/health`,
+      { method: 'GET', cache: 'no-store' },
+      5_000,
+    )
     if (!res.ok) return false
     const data = await res.json()
     return data?.status === 'ok'

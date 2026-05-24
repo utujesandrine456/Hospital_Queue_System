@@ -5,7 +5,7 @@ import { useServiceStore } from '@/store/serviceStore'
 import { useLanguage } from '@/context/LanguageContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Ticket, ArrowRight, X, Sparkles, Clock } from 'lucide-react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { SERVICE_CONFIG } from '@/lib/queue/engine'
@@ -17,6 +17,7 @@ function useHasApiAlert() {
 }
 
 export function ActiveTicketBanner() {
+  const router = useRouter()
   const { myTicket, loadFromStorage } = useQueueStore()
   const { t } = useLanguage()
   const hasApiAlert = useHasApiAlert()
@@ -84,14 +85,15 @@ export function ActiveTicketBanner() {
           style={{ top: topOffset }}
         >
           <div className="pointer-events-auto w-full max-w-lg relative">
-            <div className="absolute -inset-0.5 rounded-[1.35rem] bg-linear-to-r from-sage via-[#8aa894] to-[#2C3639] opacity-30 blur-md animate-pulse" />
+            <div className="absolute -inset-0.5 rounded-4xl bg-linear-to-r from-sage via-[#8aa894] to-[#2C3639] opacity-30 blur-md animate-pulse" />
 
             <div className="relative overflow-hidden rounded-[1.25rem] border border-white/60 bg-white/90 backdrop-blur-2xl shadow-[0_24px_60px_-16px_rgba(44,54,57,0.35)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-sage/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-              <Link
-                href={`/queue/${myTicket.id}`}
-                className="relative flex items-center gap-4 p-4 pr-14 group"
+              <button
+                type="button"
+                onClick={() => router.push(`/queue/${myTicket.id}`)}
+                className="relative flex items-center gap-4 p-4 pr-14 group w-full text-left"
               >
                 <div className="relative shrink-0">
                   <div
@@ -153,7 +155,7 @@ export function ActiveTicketBanner() {
                     {t('activeTicketBannerAction')}
                   </span>
                 </div>
-              </Link>
+              </button>
 
               <button
                 type="button"

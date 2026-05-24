@@ -236,7 +236,11 @@ export function ServiceSelector() {
                   </div>
 
                   <button
-                    onClick={() => router.push(`/queue/${myTicket!.id}`)}
+                    type="button"
+                    onClick={() => {
+                      const id = myTicket!.id
+                      router.push(`/queue/${id}`)
+                    }}
                     className="cursor-pointer w-full group flex items-center justify-center gap-3 px-8 py-4 bg-[#2C3639] text-cream rounded-xl font-bold text-base transition-all hover:bg-sage active:scale-[0.98] shadow-xl"
                   >
                     <ExternalLink size={18} className="group-hover:scale-110 transition-transform" />

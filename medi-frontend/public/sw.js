@@ -1,6 +1,6 @@
 /* MediQueue - Smart Intercept SW v8 (The Fortress) */
 
-const CACHE_NAME = 'mediqueue-v8-fortress';
+const CACHE_NAME = 'mediqueue-v9-nav-timeout';
 const OFFLINE_URL = '/';
 
 const PRECACHE_ASSETS = [
@@ -46,9 +46,20 @@ self.addEventListener('fetch', (event) => {
 
     if (request.mode === 'navigate') {
         event.respondWith(
-            fetch(request).catch(() => {
-                return caches.match(OFFLINE_URL);
-            })
+            (async () => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15_000);
+                try {
+                    const response = await fetch(request, { signal: controller.signal });
+                    return response;
+                } catch {
+                    const offline = await caches.match(OFFLINE_URL);
+                    if (offline) return offline;
+                    return fetch(request);
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+            })()
         );
         return;
     }
