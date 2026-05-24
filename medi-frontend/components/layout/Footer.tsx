@@ -1,0 +1,89 @@
+'use client'
+
+import { Mail, Phone, MapPin, Globe, Share2, MessageSquare } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useLanguage } from '@/context/LanguageContext'
+
+export function Footer() {
+    const { t } = useLanguage()
+    return (
+        <footer className="relative bg-[#2C3639] text-cream mt-32">
+            <div className="absolute top-0 left-0 right-0 -translate-y-full overflow-hidden leading-none rotate-180">
+                <svg className="relative block w-full h-24" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#2C3639"></path>
+                </svg>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6 py-12 pb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-24">
+                    <div className="space-y-8">
+                        <Link href="/" className="flex items-center gap-4">
+                            <Image src="/images/logo-image.png" alt="MediQueue Logo" width={64} height={64} className="w-16 h-16 object-cover rounded-full shadow-2xl bg-white/10 border-2 border-sage/20 p-0.5" />
+                            <span className="text-3xl font-black text-cream tracking-tight">MediQueue</span>
+                        </Link>
+                        <p className="text-sage/40 text-sm font-medium leading-relaxed">
+                            {t('footerDesc')}
+                        </p>
+                        <div className="flex items-center gap-5">
+                            {[Globe, Share2, MessageSquare].map((Icon, i) => (
+                                <button key={i} className="text-sage/30 hover:text-sage transition-colors duration-300">
+                                    <Icon size={20} />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Quick Links */}
+                    <div className="space-y-8">
+                        <h4 className="text-lg font-bold italic">{t('departmentsTitle')}</h4>
+                        <nav className="flex flex-col gap-4">
+                            {['consultation', 'laboratory', 'pharmacy', 'radiology'].map((item) => (
+                                <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
+                                    {t(item + 'Title') || item}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {/* Support */}
+                    <div className="space-y-8">
+                        <h4 className="text-lg font-bold italic">{t('patientCareTitle')}</h4>
+                        <nav className="flex flex-col gap-4">
+                            {[t('virtualQueue'), t('howItWorks'), t('offlineAccess'), t('termsOfCare')].map((item) => (
+                                <Link key={item} href="#" className="text-sm font-bold text-sage/40 hover:text-sage hover:ml-2 transition-all duration-300">
+                                    {item}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {/* Contact */}
+                    <div className="space-y-8">
+                        <h4 className="text-lg font-bold italic">{t('getInTouchTitle')}</h4>
+                        <div className="space-y-4 overflow-hidden">
+                            <div className="flex items-center gap-4 text-sage/40">
+                                <Phone size={18} className="shrink-0" />
+                                <span className="text-sm font-bold truncate">+250 784 376 747</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-sage/40">
+                                <Mail size={18} className="shrink-0" />
+                                <span className="text-sm font-bold truncate">ingogatechnologies@gmail.com</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-sage/40">
+                                <MapPin size={18} className="shrink-0" />
+                                <span className="text-sm font-bold leading-relaxed truncate">{t('kigaliRwanda')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-12 pt-6 border-t text-center border-sage/5 flex flex-col md:flex-row justify-center items-center gap-6">
+                    <p className="text-xs font-bold text-sage/20">
+                        {t('copyrightText')}
+                    </p>
+                </div>
+            </div>
+        </footer>
+    )
+}
