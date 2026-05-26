@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { TicketStatus } from '../common/ticket-status';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -13,7 +13,18 @@ function serviceDurationMs(avgServiceMinutes: number | null | undefined): number
 }
 
 @Injectable()
-export class TicketsService {
+export class TicketsService implements OnModuleInit, OnModuleDestroy {
+  private tickInterval: NodeJS.Timeout;
+
+  onModuleInit() {
+    this.tickInterval = setInterval(() => {
+      this.processAllActiveDepartments().catch(console.error);
+    }, 5000);
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.tickInterval);
+  }
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: QueueGateway,
@@ -23,7 +34,6 @@ export class TicketsService {
     this.gateway.emitQueueUpdate(departmentId, { departmentId, at: Date.now() });
   }
 
-  /** Only one ticket may be `serving` per department — fixes legacy duplicate rows. */
   private async enforceSingleServingPerDepartment(departmentId: number): Promise<boolean> {
     const servingList = await this.prisma.ticket.findMany({
       where: { departmentId, status: TicketStatus.serving },
@@ -34,9 +44,30 @@ export class TicketsService {
 
     const [, ...extras] = servingList;
     for (const extra of extras) {
-      await this.moveToEndOfQueue(extra.id, departmentId);
+      await this.prisma.ticket.update({
+        where: { id: extra.id },
+        data: { status: TicketStatus.waiting, servingStartedAt: null, serveEligibleAt: null },
+      });
     }
+    await this.recalculatePositions(departmentId);
     return true;
+  }
+
+  private async activateNextDeferredTicket(patientId: string | null): Promise<void> {
+    if (!patientId) return;
+    const nextDeferred = await this.prisma.ticket.findFirst({
+      where: { patientId, deferred: true, status: TicketStatus.waiting },
+      orderBy: { bookedAt: 'asc' },
+    });
+    if (nextDeferred) {
+      await this.prisma.ticket.update({
+        where: { id: nextDeferred.id },
+        data: { deferred: false, bookedAt: new Date() },
+      });
+      await this.recalculatePositions(nextDeferred.departmentId);
+      this.emitQueueUpdate(nextDeferred.departmentId);
+      await this.processDepartmentQueue(nextDeferred.departmentId);
+    }
   }
 
   private async moveToEndOfQueue(ticketId: number, departmentId: number): Promise<void> {
@@ -90,6 +121,7 @@ export class TicketsService {
           where: { id: serving.id },
           data: { status: TicketStatus.done, servedAt: now, serveEligibleAt: null },
         });
+        await this.activateNextDeferredTicket(serving.patientId);
         changed = true;
       }
     }
@@ -102,7 +134,7 @@ export class TicketsService {
 
     if (!stillServing) {
       const next = await this.prisma.ticket.findFirst({
-        where: { departmentId, status: TicketStatus.waiting },
+        where: { departmentId, status: TicketStatus.waiting, deferred: false },
         orderBy: [{ position: 'asc' }, { bookedAt: 'asc' }],
       });
 
@@ -145,7 +177,7 @@ export class TicketsService {
     } else {
       // Counter busy — reset call timer for everyone waiting behind
       const waiting = await this.prisma.ticket.findMany({
-        where: { departmentId, status: TicketStatus.waiting, serveEligibleAt: { not: null } },
+        where: { departmentId, status: TicketStatus.waiting, deferred: false, serveEligibleAt: { not: null } },
       });
       if (waiting.length > 0) {
         await this.prisma.ticket.updateMany({
@@ -232,6 +264,13 @@ export class TicketsService {
       where: { departmentId: dept.id, status: TicketStatus.waiting },
     });
 
+    const existingActive = dto.patientId ? await this.prisma.ticket.findFirst({
+      where: {
+        patientId: dto.patientId,
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] }
+      }
+    }) : null;
+
     const saved = await this.prisma.ticket.create({
       data: {
         ticketNumber,
@@ -240,7 +279,7 @@ export class TicketsService {
         patientPhone: dto.patientPhone,
         patientId: dto.patientId ?? null,
         position: waitingCount + 1,
-        deferred: false,
+        deferred: Boolean(existingActive),
         status: TicketStatus.waiting,
       },
       include: ticketInclude,
@@ -327,10 +366,11 @@ export class TicketsService {
         where: { id: serving.id },
         data: { status: TicketStatus.done, servedAt: new Date(), serveEligibleAt: null },
       });
+      await this.activateNextDeferredTicket(serving.patientId);
     }
 
     const next = await this.prisma.ticket.findFirst({
-      where: { departmentId, status: TicketStatus.waiting },
+      where: { departmentId, status: TicketStatus.waiting, deferred: false },
       orderBy: [{ position: 'asc' }, { bookedAt: 'asc' }],
     });
 
@@ -365,7 +405,7 @@ export class TicketsService {
 
   private async recalculatePositions(departmentId: number) {
     const waiting = await this.prisma.ticket.findMany({
-      where: { departmentId, status: TicketStatus.waiting },
+      where: { departmentId, status: TicketStatus.waiting, deferred: false },
       orderBy: [{ position: 'asc' }, { bookedAt: 'asc' }],
     });
 
@@ -391,6 +431,7 @@ export class TicketsService {
       data: { status: TicketStatus.cancelled, serveEligibleAt: null },
       include: ticketInclude,
     });
+    await this.activateNextDeferredTicket(ticket.patientId);
     await this.processDepartmentQueue(ticket.departmentId);
     return saved;
   }

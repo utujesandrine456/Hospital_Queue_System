@@ -211,6 +211,22 @@ export const translations: Translations = {
     offlineStatus: { en: "Offline Mode", fr: "Mode hors ligne", rw: "Nta Murongo Urahari" },
     activeTicketBannerTitle: { en: "Active Ticket Found", fr: "Ticket actif trouvé", rw: "Tike yabonetse" },
     activeTicketBannerAction: { en: "Resume Waiting", fr: "Continuer l'attente", rw: "Komeza utegereje" },
+
+    // MyTicketsPanel missing keys
+    myServicesTitle: { en: "My booked services", fr: "Mes services réservés", rw: "Serivisi nasabye" },
+    oneServiceBooked: { en: "1 service booked", fr: "1 service réservé", rw: "Serivisi 1 yasabwe" },
+    servicesBooked: { en: "services booked", fr: "services réservés", rw: "serivisi zasabwe" },
+    inQueue: { en: "in queue", fr: "dans la file", rw: "ku murongo" },
+    deferredLabel: { en: "Waiting its turn", fr: "En attente de son tour", rw: "Itegereje umwanya wayo" },
+    deferredHint: { en: "Will activate after your current service", fr: "S'activera après votre service actuel", rw: "Irazamuka numara kuvurwa iyi" },
+    chooseServiceNow: { en: "You are being called in multiple services at the same time.", fr: "Vous êtes appelé dans plusieurs services en même temps.", rw: "Urimo guhamagarwa mu mashami menshi icyarimwe." },
+    chooseServiceNowHint: { en: "Choose where you will go now. The other ticket will stay valid and move to the end of that queue.", fr: "Choisissez où vous irez maintenant. L'autre ticket restera valide et passera à la fin de cette file.", rw: "Hitamo aho ugiye kujya. Indi tike urayigumana ariko irajya inyuma y'abandi." },
+    saving: { en: "Saving...", fr: "Enregistrement...", rw: "Kubitara..." },
+    chooseLabel: { en: "Choose", fr: "Choisir", rw: "Hitamo" },
+    sequentialNote: { en: "Each service activates automatically after the previous one is complete", fr: "Chaque service s'active automatiquement après la fin du précédent", rw: "Buri serivisi yizana wamara gukora iyibanza" },
+    serviceChoiceSaved: { en: "Service selected. Other active call has been moved to the end of its queue.", fr: "Service sélectionné. L'autre appel a été déplacé à la fin.", rw: "Serivisi yatoranijwe. Iyindi yimuwe ijyanwa inyuma y'abandi." },
+    serviceChoiceFailed: { en: "Could not save your service choice. Please try again.", fr: "Impossible d'enregistrer. Veuillez réessayer.", rw: "Ntibyashobotse. Ongera ugerageze." },
+    bookedLabel: { en: "ACTIVE", fr: "ACTIF", rw: "YAFASHWE" },
 };
 
 interface LanguageContextType {

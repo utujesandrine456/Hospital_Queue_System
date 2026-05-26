@@ -49,11 +49,11 @@ function ServingCard({
         <p className="text-white/60 text-xs font-bold">{SERVICE_CONFIG[ticket.serviceType]?.label}</p>
         <p className="text-white/60 text-[10px] font-semibold mt-1">
           {expired
-            ? 'Service time ended — updating queue…'
+            ? `Service time exceeded — wrapping up...`
             : `~${remainingMinutes} min left of ${avgMin} min slot`}
         </p>
         <div className="mt-2 h-1 rounded-full bg-white/20 overflow-hidden">
-          <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${percent}%` }} />
+          <div className={cn("h-full transition-all duration-1000", expired ? "bg-amber-400" : "bg-green-500")} style={{ width: `${percent}%` }} />
         </div>
       </div>
       <ChevronRight size={20} className="text-white/50 shrink-0" />
@@ -83,7 +83,7 @@ export function WaitingList({ tickets, currentUserTicketId }: WaitingListProps) 
             {servingTickets.length > 0 && waitingTickets.length > 0
               ? `${servingTickets.length} serving · ${waitingTickets.length} waiting`
               : servingTickets.length > 0
-                ? '1 at counter'
+                ? '1 In Queue'
                 : waitingTickets.length > 0
                   ? `${waitingTickets.length} waiting`
                   : '0 active'}
@@ -160,7 +160,7 @@ export function WaitingList({ tickets, currentUserTicketId }: WaitingListProps) 
               ))}
             </AnimatePresence>
           </>
-        ): !hasAnyone ? (
+        ) : !hasAnyone ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -3,7 +3,6 @@ import type { QueueTicket, ServiceInfo, TicketStatus } from '@/types'
 import { calculateWaitTime } from '@/lib/queue/engine'
 
 function mapStatus(status: ApiTicket['status']): TicketStatus {
-  if (status === 'done') return 'completed'
   return status as TicketStatus
 }
 
@@ -24,14 +23,12 @@ export function mapTicketFromApi(ticket: ApiTicket): QueueTicket {
   const avgServiceMinutes = ticket.department?.avgServiceMinutes ?? 5
   const status = mapStatus(ticket.status)
   const position =
-    status === 'serving' ? 1 : status === 'completed' || status === 'cancelled' ? 0 : Math.max(1, ticket.position)
+    status === 'serving' ? 1 : (status === 'completed' || status === 'done' || status === 'cancelled') ? 0 : Math.max(1, ticket.position)
 
   const createdAt = new Date(ticket.bookedAt).getTime()
   const servingStartedAt = ticket.servingStartedAt
     ? new Date(ticket.servingStartedAt).getTime()
-    : status === 'serving'
-      ? createdAt
-      : null
+    : null   // never fall back to createdAt — backend sets this only when truly serving
   const updatedAt = ticket.servedAt
     ? new Date(ticket.servedAt).getTime()
     : servingStartedAt ?? createdAt

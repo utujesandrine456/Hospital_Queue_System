@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import {
   Loader2,
   ArrowRight,
+  ChevronRight,
   Sparkles,
   Stethoscope,
   FlaskConical,
@@ -111,12 +112,13 @@ export function ServiceSelector() {
           const Icon = getIconForService(category)
           const isSelected = selectedId === category.type
 
-          // Does the patient already have ANY ticket for this service?
           const alreadyBooked = myTickets.some(
-            t =>
-              t.serviceType === category.type &&
-              (t.status === 'waiting' || t.status === 'serving'),
+            t => t.serviceType === category.type
           )
+          const myTicketForService = myTickets.find(t => t.serviceType === category.type)
+          const ticketStatus = myTicketForService?.status
+          const ticketNumber = myTicketForService?.ticketNumber
+          const ticketPosition = myTicketForService?.position
 
           return (
             <motion.div
@@ -127,9 +129,13 @@ export function ServiceSelector() {
               transition={{ delay: index * 0.1 }}
               onClick={() => !alreadyBooked && handleServiceSelect(category)}
               className={cn(
-                'group relative p-10 rounded-[2.5rem] border-2 transition-all duration-500 overflow-hidden',
+                'group relative p-3 rounded-[2.5rem] border-2 transition-all duration-500 overflow-hidden',
                 alreadyBooked
-                  ? 'bg-sage/8 border-sage/20 cursor-default'
+                  ? ticketStatus === 'serving'
+                    ? 'bg-[#2C3639] border-[#2C3639] shadow-2xl shadow-[#2C3639]/40 cursor-default'
+                    : ticketStatus === 'done'
+                      ? 'bg-sage/5 border-sage/15 cursor-default opacity-60'
+                      : 'bg-[#3A4C50] border-sage shadow-xl shadow-sage/25 cursor-default'
                   : isSelected
                     ? 'bg-sage border-sage shadow-2xl shadow-sage/30 scale-[1.02] cursor-pointer'
                     : 'bg-white border-sage/5 hover:border-sage/20 hover:shadow-2xl hover:shadow-sage/10 cursor-pointer',
@@ -137,60 +143,121 @@ export function ServiceSelector() {
             >
               <div
                 className={cn(
-                  'absolute -top-12 -right-12 w-40 h-40 rounded-full transition-all duration-700',
-                  isSelected ? 'bg-white/10' : 'bg-sage/10 group-hover:bg-sage/15',
+                  'absolute -top-12 -right-12 w-48 h-48 rounded-full transition-all duration-700',
+                  alreadyBooked ? 'bg-white/5' : isSelected ? 'bg-white/10' : 'bg-sage/10 group-hover:bg-sage/15',
                 )}
               />
 
-              {/* Already-booked badge */}
-              {alreadyBooked && (
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-sage/10 border border-sage/20 rounded-full">
-                  <CheckCircle2 size={11} className="text-sage" />
-                  <span className="text-[10px] font-bold text-sage">
-                    {t('bookedLabel') ?? 'Booked'}
-                  </span>
-                </div>
-              )}
+              <div className="relative z-10 p-8 space-y-5">
+                <div className="flex items-start justify-between">
+                  <div
+                    className={cn(
+                      'w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm shrink-0',
+                      isSelected
+                        ? 'bg-white/20 text-white'
+                        : alreadyBooked
+                          ? 'bg-white/15 text-white'
+                          : 'bg-sage/10 text-sage group-hover:scale-110',
+                    )}
+                  >
+                    <Icon size={26} strokeWidth={2} />
+                  </div>
 
-              <div className="relative z-10 space-y-8">
-                <div
-                  className={cn(
-                    'w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500',
-                    isSelected
-                      ? 'bg-white/20 text-cream'
-                      : alreadyBooked
-                        ? 'bg-sage/10 text-sage/50'
-                        : 'bg-sage/10 text-sage group-hover:scale-110',
+                  {alreadyBooked && ticketStatus === 'serving' && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-400/20 border border-emerald-400/30 rounded-full">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                      </span>
+                      <span className="text-[10px] font-black text-emerald-300 tracking-widest">NOW SERVING</span>
+                    </div>
                   )}
-                >
-                  <Icon size={32} strokeWidth={2} />
+                  {alreadyBooked && ticketStatus === 'waiting' && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-400/20 border border-amber-300/25 rounded-full">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300" />
+                      </span>
+                      <span className="text-[10px] font-black text-amber-200 tracking-widest">ACTIVE</span>
+                    </div>
+                  )}
+                  {alreadyBooked && ticketStatus === 'done' && (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-sage/10 border border-sage/20 rounded-full">
+                      <CheckCircle2 size={10} className="text-sage" />
+                      <span className="text-[10px] font-black text-sage tracking-widest">DONE</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="space-y-3">
+                {/* Service name & description */}
+                <div className="space-y-1">
                   <h3
                     className={cn(
-                      'text-2xl font-bold transition-colors duration-500',
-                      isSelected ? 'text-cream' : 'text-[#2C3639]',
+                      'text-xl font-bold tracking-tight transition-colors duration-500',
+                      alreadyBooked && ticketStatus !== 'done'
+                        ? 'text-white'
+                        : isSelected
+                          ? 'text-white'
+                          : 'text-[#2C3639]',
                     )}
                   >
                     {t(`${category.type}Title`, category.label)}
                   </h3>
                   <p
                     className={cn(
-                      'text-sm font-medium transition-colors duration-500 leading-relaxed',
-                      isSelected ? 'text-cream/70' : 'text-sage/60',
+                      'text-sm leading-relaxed transition-colors duration-500',
+                      alreadyBooked && ticketStatus !== 'done'
+                        ? 'text-white/55'
+                        : isSelected
+                          ? 'text-white/75'
+                          : 'text-sage/60',
                     )}
                   >
                     {t(`${category.type}Desc`, category.description)}
                   </p>
                 </div>
 
+                {/* Ticket chip — shown when booked */}
+                {alreadyBooked && ticketNumber && (
+                  <div className={cn(
+                    'flex items-center justify-between rounded-xl px-4 py-3 border',
+                    ticketStatus === 'done'
+                      ? 'bg-sage/5 border-sage/10'
+                      : 'bg-white/8 border-white/10',
+                  )}>
+                    <div className="flex items-center gap-2.5">
+                      <span className={cn(
+                        'text-xs font-black font-mono px-2 py-1 rounded-lg',
+                        ticketStatus === 'done'
+                          ? 'bg-sage/10 text-sage/70'
+                          : 'bg-white/15 text-white',
+                      )}>
+                        #{ticketNumber}
+                      </span>
+                      <span className={cn(
+                        'text-xs font-semibold',
+                        ticketStatus === 'done' ? 'text-sage/50' : 'text-white/55',
+                      )}>
+                        {ticketStatus === 'serving'
+                          ? 'Currently at counter'
+                          : ticketStatus === 'done'
+                            ? 'Service completed'
+                            : `Position #${ticketPosition ?? '—'} in queue`}
+                      </span>
+                    </div>
+                    {ticketStatus !== 'done' && (
+                      <ChevronRight size={14} className="text-white/30" strokeWidth={2.5} />
+                    )}
+                  </div>
+                )}
+
+                {/* Hover CTA for available services */}
                 {!alreadyBooked && (
                   <div
                     className={cn(
                       'flex items-center gap-2 text-xs font-bold italic transition-all duration-500',
                       isSelected
-                        ? 'text-cream'
+                        ? 'text-white'
                         : 'text-sage opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0',
                     )}
                   >
@@ -199,6 +266,13 @@ export function ServiceSelector() {
                   </div>
                 )}
               </div>
+
+              {/* Serving shimmer bar */}
+              {alreadyBooked && ticketStatus === 'serving' && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
+                  <div className="h-full w-1/2 bg-emerald-400/50 rounded-full animate-pulse" />
+                </div>
+              )}
             </motion.div>
           )
         })}
@@ -228,9 +302,9 @@ export function ServiceSelector() {
                   onChange={e => setPatientName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleGenerateTicket()}
                   placeholder={t('patientNamePlaceholder')}
-                  className="w-full px-5 py-4 rounded-lg bg-white text-[#2C3639] border border-sage/60 focus:border-sage focus:ring-4 focus:ring-sage/10 outline-none transition-all font-medium placeholder:text-sage/40"
+                  className="w-full px-5 py-4 rounded-xl bg-white text-[#2C3639] border-2 border-sage/40 shadow-sm focus:border-sage focus:ring-4 focus:ring-sage/15 outline-none transition-all font-bold placeholder:text-sage/40 placeholder:font-medium"
                   autoFocus
-                  autoComplete="off"
+                  autoComplete="new-password"
                   spellCheck={false}
                   disabled={myTickets.length > 0 && myTickets[0]?.patientName !== 'Anonymous User'}
                 />

@@ -1,6 +1,6 @@
 export type ServiceType = string
 
-export type TicketStatus = 'waiting' | 'serving' | 'completed' | 'cancelled'
+export type TicketStatus = 'waiting' | 'serving' | 'done' | 'completed' | 'cancelled'
 
 export type SyncAction = 'CREATE_TICKET' | 'UPDATE_STATUS'
 
