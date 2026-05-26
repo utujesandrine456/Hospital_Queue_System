@@ -6,6 +6,7 @@ import { OfflineStatus } from "@/components/layout/OfflineStatus";
 import { ApiStatusBanner } from "@/components/layout/ApiStatusBanner";
 import { ClearLegacyCache } from "@/components/layout/ClearLegacyCache";
 
+
 const sen = Sen({
   variable: "--font-sen",
   subsets: ["latin"],
@@ -49,36 +50,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="manifest" href="/manifest.json" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  // 1. Force Unregister all legacy workers
-                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for(let registration of registrations) {
-                      registration.unregister();
-                    }
-                  });
-
-                  // 2. Register new Resilient SW
-                  navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                    .then(function(registration) {
-                      console.log('MediQueue SW Active:', registration.scope);
-                    })
-                    .catch(function(err) {
-                      console.info('MediQueue SW Registration skipped or failed (common in dev):', err);
-                    });
-                });
-              }
-              window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                window.deferredPWAPrompt = e;
-                window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
-              });
-            `,
-          }}
-        />
       </head>
       <body className="min-h-full flex flex-col">
         <LanguageProvider>

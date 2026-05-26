@@ -28,7 +28,6 @@ export class TicketsController {
     return this.svc.getQueue(id);
   }
 
-  /** Shows raw PostgreSQL rows for a department queue (debug duplicate serving) */
   @Get('queue/:departmentId/integrity')
   getQueueIntegrity(@Param('departmentId', ParseIntPipe) id: number) {
     return this.svc.getQueueIntegrity(id);

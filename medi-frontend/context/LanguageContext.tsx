@@ -169,7 +169,7 @@ export const translations: Translations = {
     termsOfService: { en: "Terms of Service", fr: "Conditions d'utilisation", rw: "Amabwiriza yo gukoresha" },
     rightsReserved: { en: "All rights reserved.", fr: "Tous droits réservés.", rw: "Uburenganzira bwose burabitswe." },
 
-    smartHealth: { en: "Smart Health", fr: "Santé Intelligente", rw: "Ubuzima Bwiza" },
+    smartHealth: { en: "No More Waiting In Line", fr: "Santé Intelligente", rw: "Ubuzima Bwiza" },
     nowServing: { en: "Now Serving", fr: "En Service", rw: "Arakirwa ubu" },
     waiting: { en: "Waiting", fr: "En attente", rw: "Ategereje" },
     completed: { en: "Completed", fr: "Terminé", rw: "Byarangiye" },

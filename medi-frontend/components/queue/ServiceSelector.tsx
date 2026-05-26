@@ -222,6 +222,7 @@ export function ServiceSelector() {
                 </label>
                 <input
                   id="patientName"
+                  name="patientName"
                   type="text"
                   value={patientName}
                   onChange={e => setPatientName(e.target.value)}
@@ -229,6 +230,8 @@ export function ServiceSelector() {
                   placeholder={t('patientNamePlaceholder')}
                   className="w-full px-5 py-4 rounded-lg bg-white text-[#2C3639] border border-sage/60 focus:border-sage focus:ring-4 focus:ring-sage/10 outline-none transition-all font-medium placeholder:text-sage/40"
                   autoFocus
+                  autoComplete="off"
+                  spellCheck={false}
                   disabled={myTickets.length > 0 && myTickets[0]?.patientName !== 'Anonymous User'}
                 />
                 {myTickets.length > 0 && (
