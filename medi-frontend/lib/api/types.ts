@@ -17,6 +17,8 @@ export interface ApiTicket {
   status: ApiTicketStatus
   patientName?: string | null
   patientPhone?: string | null
+  patientId?: string | null
+  deferred?: boolean
   position: number
   bookedAt: string
   servingStartedAt?: string | null

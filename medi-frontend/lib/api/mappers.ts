@@ -21,6 +21,7 @@ export function mapDepartmentToService(dept: ApiDepartment): ServiceInfo {
 
 export function mapTicketFromApi(ticket: ApiTicket): QueueTicket {
   const serviceType = ticket.department?.slug ?? 'consultation'
+  const avgServiceMinutes = ticket.department?.avgServiceMinutes ?? 5
   const status = mapStatus(ticket.status)
   const position =
     status === 'serving' ? 1 : status === 'completed' || status === 'cancelled' ? 0 : Math.max(1, ticket.position)
@@ -40,7 +41,7 @@ export function mapTicketFromApi(ticket: ApiTicket): QueueTicket {
       ? 0
       : status === 'waiting' && position === 1
         ? 0
-        : calculateWaitTime(position, serviceType)
+        : calculateWaitTime(position, serviceType, avgServiceMinutes)
 
   return {
     id: String(ticket.id),
@@ -49,12 +50,15 @@ export function mapTicketFromApi(ticket: ApiTicket): QueueTicket {
     status,
     position,
     estimatedWaitMinutes,
+    avgServiceMinutes,
     patientName: ticket.patientName?.trim() || 'Anonymous User',
     createdAt,
     updatedAt,
     servingStartedAt,
     synced: true,
     isSimulated: false,
+    patientId: (ticket as any).patientId ?? null,
+    deferred: (ticket as any).deferred ?? false,
   }
 }
 

@@ -11,4 +11,8 @@ export class CreateTicketDto {
   @IsOptional()
   @IsString()
   patientPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  patientId?: string;
 }

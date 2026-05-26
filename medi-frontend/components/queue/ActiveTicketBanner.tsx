@@ -4,7 +4,7 @@ import { useQueueStore } from '@/store/queueStore'
 import { useServiceStore } from '@/store/serviceStore'
 import { useLanguage } from '@/context/LanguageContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Ticket, ArrowRight, X, Sparkles, Clock } from 'lucide-react'
+import { Ticket, ArrowRight, X, Sparkles, Clock, Layers } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -18,7 +18,7 @@ function useHasApiAlert() {
 
 export function ActiveTicketBanner() {
   const router = useRouter()
-  const { myTicket, loadFromStorage } = useQueueStore()
+  const { myTicket, myTickets, loadFromStorage } = useQueueStore()
   const { t } = useLanguage()
   const hasApiAlert = useHasApiAlert()
   const [mounted, setMounted] = useState(false)
@@ -73,6 +73,11 @@ export function ActiveTicketBanner() {
     ? 'calc(var(--header-height) + 6.25rem)'
     : 'var(--notification-top)'
 
+  // Extra tickets beyond the active one
+  const extraCount = myTickets.filter(
+    t => t.id !== myTicket.id && (t.status === 'waiting' || t.status === 'serving'),
+  ).length
+
   return (
     <AnimatePresence mode="wait">
       {isVisible && (
@@ -119,7 +124,7 @@ export function ActiveTicketBanner() {
                         isServing ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400',
                       )}
                     />
-                    <span className="text-[10px] font-black tracking-[0.2em] text-sage uppercase">
+                    <span className="text-[10px] font-bold text-sage">
                       {t('activeTicketBannerTitle')}
                     </span>
                   </div>
@@ -127,10 +132,10 @@ export function ActiveTicketBanner() {
                     {myTicket.ticketNumber}
                   </p>
                   <p className="text-xs font-bold text-sage/80 mt-0.5 truncate">{serviceLabel}</p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span
                       className={cn(
-                        'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide',
+                        'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold',
                         isServing
                           ? 'bg-sage/15 text-sage'
                           : 'bg-amber-50 text-amber-800 border border-amber-100',
@@ -142,6 +147,13 @@ export function ActiveTicketBanner() {
                     {myTicket.estimatedWaitMinutes > 0 && !isServing && (
                       <span className="text-[10px] font-bold text-[#2C3639]/45">
                         ~{myTicket.estimatedWaitMinutes} min
+                      </span>
+                    )}
+                    {/* Extra services pill */}
+                    {extraCount > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#2C3639]/8 text-[#2C3639]/60">
+                        <Layers size={9} />
+                        +{extraCount} {extraCount === 1 ? (t('moreService') ?? 'more service') : (t('moreServices') ?? 'more services')}
                       </span>
                     )}
                   </div>

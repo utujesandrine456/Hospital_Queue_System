@@ -34,12 +34,16 @@ model Ticket {
   status       TicketStatus @default(waiting)
   patientName  String?
   patientPhone String?
+  patientId    String?      // client-generated UUID grouping a patient's visit
+  deferred     Boolean      @default(false) // held until earlier service is done
   position     Int          @default(0)
   bookedAt          DateTime     @default(now())
+  serveEligibleAt   DateTime?    // when ticket became #1 and counter is free (4s grace before call)
   servingStartedAt  DateTime?
   servedAt          DateTime?
   departmentId      Int
   department   Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
+  @@index([patientId])
   @@map("tickets")
 }

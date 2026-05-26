@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('tickets')
 export class TicketsController {
-  constructor(private svc: TicketsService) {}
+  constructor(private svc: TicketsService) { }
 
   @Post()
   create(@Body() dto: CreateTicketDto) {
@@ -28,10 +28,30 @@ export class TicketsController {
     return this.svc.getQueue(id);
   }
 
+  /** Shows raw PostgreSQL rows for a department queue (debug duplicate serving) */
+  @Get('queue/:departmentId/integrity')
+  getQueueIntegrity(@Param('departmentId', ParseIntPipe) id: number) {
+    return this.svc.getQueueIntegrity(id);
+  }
+
   @Get('stats/:departmentId')
   @UseGuards(JwtAuthGuard)
   getStats(@Param('departmentId', ParseIntPipe) id: number) {
     return this.svc.getStats(id);
+  }
+
+  /** Returns all active tickets for a patient session (public) */
+  @Get('patient/:patientId')
+  getByPatient(@Param('patientId') patientId: string) {
+    return this.svc.getTicketsByPatient(patientId);
+  }
+
+  @Put('patient/:patientId/choose/:ticketId')
+  chooseServingTicket(
+    @Param('patientId') patientId: string,
+    @Param('ticketId', ParseIntPipe) ticketId: number,
+  ) {
+    return this.svc.chooseServingTicket(patientId, ticketId);
   }
 
   @Get(':id')

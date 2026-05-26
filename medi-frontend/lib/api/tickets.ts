@@ -14,6 +14,17 @@ export const ticketsApi = {
     return apiRequest<ApiTicket[]>('/tickets/active')
   },
 
+  getByPatient(patientId: string) {
+    return apiRequest<ApiTicket[]>(`/tickets/patient/${patientId}`)
+  },
+
+  chooseServingTicket(patientId: string, ticketId: number) {
+    return apiRequest<ApiTicket[]>(
+      `/tickets/patient/${patientId}/choose/${ticketId}`,
+      { method: 'PUT' },
+    )
+  },
+
   getRecentForAdmin(token: string) {
     return apiRequest<ApiTicket[]>('/tickets/admin/recent', { token })
   },

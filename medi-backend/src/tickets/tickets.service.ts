@@ -5,29 +5,80 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { QueueGateway } from './queue.gateway';
 
 const ticketInclude = { department: true } as const;
+/** How long #1 in queue waits before auto-call when the counter is free */
+const AUTO_CALL_DELAY_MS = 4_000;
+
+function serviceDurationMs(avgServiceMinutes: number | null | undefined): number {
+  return (avgServiceMinutes ?? 5) * 60 * 1000;
+}
 
 @Injectable()
 export class TicketsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: QueueGateway,
-  ) {}
+  ) { }
 
   private emitQueueUpdate(departmentId: number) {
     this.gateway.emitQueueUpdate(departmentId, { departmentId, at: Date.now() });
   }
 
+  /** Only one ticket may be `serving` per department — fixes legacy duplicate rows. */
+  private async enforceSingleServingPerDepartment(departmentId: number): Promise<boolean> {
+    const servingList = await this.prisma.ticket.findMany({
+      where: { departmentId, status: TicketStatus.serving },
+      orderBy: [{ servingStartedAt: 'asc' }, { bookedAt: 'asc' }],
+    });
+
+    if (servingList.length <= 1) return false;
+
+    const [, ...extras] = servingList;
+    for (const extra of extras) {
+      await this.moveToEndOfQueue(extra.id, departmentId);
+    }
+    return true;
+  }
+
+  private async moveToEndOfQueue(ticketId: number, departmentId: number): Promise<void> {
+    await this.prisma.ticket.update({
+      where: { id: ticketId },
+      data: {
+        status: TicketStatus.waiting,
+        servingStartedAt: null,
+        serveEligibleAt: null,
+        bookedAt: new Date(),
+      },
+    });
+    await this.recalculatePositions(departmentId);
+  }
+
+  private async isPatientServingElsewhere(
+    patientId: string | null,
+    departmentId: number,
+  ): Promise<boolean> {
+    if (!patientId) return false;
+    const other = await this.prisma.ticket.findFirst({
+      where: {
+        patientId,
+        status: TicketStatus.serving,
+        departmentId: { not: departmentId },
+      },
+    });
+    return Boolean(other);
+  }
 
   private async processDepartmentQueue(departmentId: number): Promise<void> {
+    const now = new Date();
+    let changed = await this.enforceSingleServingPerDepartment(departmentId);
+
     const dept = await this.prisma.department.findUnique({
       where: { id: departmentId },
     });
-    const serviceMs = (dept?.avgServiceMinutes ?? 5) * 60 * 1000;
-    const now = new Date();
-    let changed = false;
+    const serviceMs = serviceDurationMs(dept?.avgServiceMinutes);
 
     const serving = await this.prisma.ticket.findFirst({
       where: { departmentId, status: TicketStatus.serving },
+      orderBy: { servingStartedAt: 'asc' },
     });
 
     if (serving) {
@@ -37,7 +88,7 @@ export class TicketsService {
       if (elapsed >= serviceMs) {
         await this.prisma.ticket.update({
           where: { id: serving.id },
-          data: { status: TicketStatus.done, servedAt: now },
+          data: { status: TicketStatus.done, servedAt: now, serveEligibleAt: null },
         });
         changed = true;
       }
@@ -46,23 +97,60 @@ export class TicketsService {
     const stillServing = changed
       ? null
       : await this.prisma.ticket.findFirst({
-          where: { departmentId, status: TicketStatus.serving },
-        });
+        where: { departmentId, status: TicketStatus.serving },
+      });
 
     if (!stillServing) {
       const next = await this.prisma.ticket.findFirst({
         where: { departmentId, status: TicketStatus.waiting },
-        orderBy: { bookedAt: 'asc' },
+        orderBy: [{ position: 'asc' }, { bookedAt: 'asc' }],
       });
 
       if (next) {
-        await this.prisma.ticket.update({
-          where: { id: next.id },
-          data: {
-            status: TicketStatus.serving,
-            position: 0,
-            servingStartedAt: new Date() as Date,
-          },
+        const blocked = await this.isPatientServingElsewhere(
+          next.patientId,
+          departmentId,
+        );
+
+        if (blocked) {
+          if (next.serveEligibleAt) {
+            await this.prisma.ticket.update({
+              where: { id: next.id },
+              data: { serveEligibleAt: null },
+            });
+            changed = true;
+          }
+        } else if (!next.serveEligibleAt) {
+          await this.prisma.ticket.update({
+            where: { id: next.id },
+            data: { serveEligibleAt: now },
+          });
+          changed = true;
+        } else {
+          const waitMs = now.getTime() - new Date(next.serveEligibleAt).getTime();
+          if (waitMs >= AUTO_CALL_DELAY_MS) {
+            await this.prisma.ticket.update({
+              where: { id: next.id },
+              data: {
+                status: TicketStatus.serving,
+                position: 0,
+                servingStartedAt: now,
+                serveEligibleAt: null,
+              },
+            });
+            changed = true;
+          }
+        }
+      }
+    } else {
+      // Counter busy — reset call timer for everyone waiting behind
+      const waiting = await this.prisma.ticket.findMany({
+        where: { departmentId, status: TicketStatus.waiting, serveEligibleAt: { not: null } },
+      });
+      if (waiting.length > 0) {
+        await this.prisma.ticket.updateMany({
+          where: { departmentId, status: TicketStatus.waiting },
+          data: { serveEligibleAt: null },
         });
         changed = true;
       }
@@ -88,6 +176,46 @@ export class TicketsService {
     }
   }
 
+  /** Raw queue snapshot for debugging duplicate-serving issues */
+  async getQueueIntegrity(departmentId: number) {
+    const dept = await this.prisma.department.findUnique({ where: { id: departmentId } });
+    if (!dept) throw new NotFoundException('Department not found');
+
+    await this.processDepartmentQueue(departmentId);
+
+    const tickets = await this.prisma.ticket.findMany({
+      where: {
+        departmentId,
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] },
+      },
+      orderBy: [{ status: 'asc' }, { position: 'asc' }, { bookedAt: 'asc' }],
+      select: {
+        id: true,
+        ticketNumber: true,
+        status: true,
+        position: true,
+        patientName: true,
+        patientId: true,
+        bookedAt: true,
+        serveEligibleAt: true,
+        servingStartedAt: true,
+      },
+    });
+
+    const serving = tickets.filter(t => t.status === TicketStatus.serving);
+    const waiting = tickets.filter(t => t.status === TicketStatus.waiting);
+
+    return {
+      department: { id: dept.id, name: dept.name, slug: dept.slug },
+      rule: 'At most ONE ticket with status=serving per department',
+      servingCount: serving.length,
+      waitingCount: waiting.length,
+      isValid: serving.length <= 1,
+      serving,
+      waiting,
+    };
+  }
+
   async create(dto: CreateTicketDto) {
     const dept = await this.prisma.department.findUnique({
       where: { id: dto.departmentId },
@@ -110,7 +238,9 @@ export class TicketsService {
         departmentId: dept.id,
         patientName: dto.patientName,
         patientPhone: dto.patientPhone,
+        patientId: dto.patientId ?? null,
         position: waitingCount + 1,
+        deferred: false,
         status: TicketStatus.waiting,
       },
       include: ticketInclude,
@@ -172,7 +302,22 @@ export class TicketsService {
     return refreshed;
   }
 
+  /** Returns all active tickets belonging to a patient session */
+  async getTicketsByPatient(patientId: string) {
+    await this.processAllActiveDepartments();
+    return this.prisma.ticket.findMany({
+      where: {
+        patientId,
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] },
+      },
+      orderBy: { bookedAt: 'asc' },
+      include: ticketInclude,
+    });
+  }
+
   async callNext(departmentId: number) {
+    await this.enforceSingleServingPerDepartment(departmentId);
+
     const serving = await this.prisma.ticket.findFirst({
       where: { departmentId, status: TicketStatus.serving },
     });
@@ -180,16 +325,23 @@ export class TicketsService {
     if (serving) {
       await this.prisma.ticket.update({
         where: { id: serving.id },
-        data: { status: TicketStatus.done, servedAt: new Date() },
+        data: { status: TicketStatus.done, servedAt: new Date(), serveEligibleAt: null },
       });
     }
 
     const next = await this.prisma.ticket.findFirst({
       where: { departmentId, status: TicketStatus.waiting },
-      orderBy: { bookedAt: 'asc' },
+      orderBy: [{ position: 'asc' }, { bookedAt: 'asc' }],
     });
 
     if (!next) {
+      await this.recalculatePositions(departmentId);
+      this.emitQueueUpdate(departmentId);
+      return null;
+    }
+
+    const blocked = await this.isPatientServingElsewhere(next.patientId, departmentId);
+    if (blocked) {
       await this.recalculatePositions(departmentId);
       this.emitQueueUpdate(departmentId);
       return null;
@@ -201,6 +353,7 @@ export class TicketsService {
         status: TicketStatus.serving,
         position: 0,
         servingStartedAt: new Date(),
+        serveEligibleAt: null,
       },
     });
 
@@ -213,7 +366,7 @@ export class TicketsService {
   private async recalculatePositions(departmentId: number) {
     const waiting = await this.prisma.ticket.findMany({
       where: { departmentId, status: TicketStatus.waiting },
-      orderBy: { bookedAt: 'asc' },
+      orderBy: [{ position: 'asc' }, { bookedAt: 'asc' }],
     });
 
     await Promise.all(
@@ -235,11 +388,58 @@ export class TicketsService {
 
     const saved = await this.prisma.ticket.update({
       where: { id },
-      data: { status: TicketStatus.cancelled },
+      data: { status: TicketStatus.cancelled, serveEligibleAt: null },
       include: ticketInclude,
     });
     await this.processDepartmentQueue(ticket.departmentId);
     return saved;
+  }
+
+  async chooseServingTicket(patientId: string, chosenTicketId: number) {
+    const chosen = await this.prisma.ticket.findFirst({
+      where: {
+        id: chosenTicketId,
+        patientId,
+        status: { in: [TicketStatus.waiting, TicketStatus.serving] },
+      },
+      include: ticketInclude,
+    });
+    if (!chosen) throw new NotFoundException('Ticket not found for this patient');
+
+    if (chosen.status !== TicketStatus.serving) {
+      await this.prisma.ticket.update({
+        where: { id: chosen.id },
+        data: {
+          status: TicketStatus.serving,
+          position: 0,
+          servingStartedAt: new Date(),
+          serveEligibleAt: null,
+        },
+      });
+    }
+
+    const conflicts = await this.prisma.ticket.findMany({
+      where: {
+        patientId,
+        status: TicketStatus.serving,
+        id: { not: chosen.id },
+      },
+      include: ticketInclude,
+    });
+
+    const touchedDepartments = new Set<number>([chosen.departmentId]);
+    for (const conflict of conflicts) {
+      await this.moveToEndOfQueue(conflict.id, conflict.departmentId);
+      touchedDepartments.add(conflict.departmentId);
+    }
+
+    for (const deptId of touchedDepartments) {
+      await this.enforceSingleServingPerDepartment(deptId);
+      await this.recalculatePositions(deptId);
+      this.emitQueueUpdate(deptId);
+    }
+
+    return this.getTicketsByPatient(patientId);
   }
 
   async getStats(departmentId: number) {

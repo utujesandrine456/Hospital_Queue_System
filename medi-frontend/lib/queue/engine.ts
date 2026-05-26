@@ -37,10 +37,14 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceInfo> = {
   },
 }
 
-export function calculateWaitTime(position: number, serviceType: ServiceType): number {
+export function calculateWaitTime(
+  position: number,
+  serviceType: ServiceType,
+  avgMinutesOverride?: number,
+): number {
   if (position <= 1) return 0
 
-  let avgMinutes = 5
+  let avgMinutes = avgMinutesOverride ?? 5
 
   // 1. Check LocalStorage first for dynamic user overrides
   if (typeof window !== 'undefined') {
@@ -58,7 +62,7 @@ export function calculateWaitTime(position: number, serviceType: ServiceType): n
   }
 
   // 2. Fallback to hardcoded SERVICE_CONFIG
-  if (SERVICE_CONFIG[serviceType]) {
+  if (!avgMinutesOverride && SERVICE_CONFIG[serviceType]) {
     avgMinutes = SERVICE_CONFIG[serviceType].avgServiceMinutes
   }
 
@@ -102,6 +106,9 @@ async function generateSimulatedPatients(
       servingStartedAt: null,
       synced: true,
       isSimulated: true,
+      patientId: null,
+      deferred: false,
+      avgServiceMinutes: SERVICE_CONFIG[serviceType]?.avgServiceMinutes ?? 5,
     }
     tickets.push(ticket)
   }
@@ -142,6 +149,9 @@ export async function createNewTicket(
     servingStartedAt: null,
     synced: false,
     isSimulated: false,
+    patientId: null,
+    deferred: false,
+    avgServiceMinutes: SERVICE_CONFIG[serviceType]?.avgServiceMinutes ?? 5,
   }
 
   await saveTicket(ticket)

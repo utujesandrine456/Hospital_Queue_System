@@ -11,12 +11,16 @@ export interface QueueTicket {
   status: TicketStatus
   position: number
   estimatedWaitMinutes: number
+  /** From department.avgServiceMinutes — how long a serving slot lasts */
+  avgServiceMinutes: number
   patientName: string
   createdAt: number
   updatedAt: number
   servingStartedAt: number | null
   synced: boolean
   isSimulated: boolean
+  patientId: string | null
+  deferred: boolean
 }
 
 export interface OutboxEntry {
@@ -44,13 +48,16 @@ export interface ServiceCounter {
 }
 
 export interface QueueStoreState {
-  myTicket: QueueTicket | null
+  myTicket: QueueTicket | null        // compat getter → first active non-deferred ticket
+  myTickets: QueueTicket[]            // all tickets belonging to this patient session
+  patientId: string | null            // persisted session UUID
   allTickets: QueueTicket[]
   pendingSync: OutboxEntry[]
   isLoading: boolean
   isCreating: boolean
   initializeQueue: (serviceType: ServiceType) => Promise<void>
   createTicket: (serviceType: ServiceType, patientName: string) => Promise<QueueTicket | null>
+  chooseServingTicket: (ticketId: string) => Promise<boolean>
   advanceQueue: (serviceType: ServiceType) => Promise<void>
   setTicketStatus: (id: string, status: TicketStatus) => void
   loadFromStorage: () => Promise<void>
@@ -60,6 +67,7 @@ export interface QueueStoreState {
   addToOutbox: (entry: OutboxEntry) => void
   removeFromOutbox: (id: string) => void
   clearMyTicket: () => void
+  clearAllTickets: () => void
   resetSystem: () => Promise<void>
 }
 

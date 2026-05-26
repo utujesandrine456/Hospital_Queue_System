@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { SERVICE_CONFIG } from '@/lib/queue/engine'
 import { useLanguage } from '@/context/LanguageContext'
+import { useServiceTimer } from '@/hooks/useServiceTimer'
 
 const ICON_MAP = {
   consultation: Stethoscope,
@@ -30,6 +31,11 @@ interface TicketCardProps {
 export function TicketCard({ ticket }: TicketCardProps) {
   const { t } = useLanguage()
   const isServing = ticket.status === 'serving'
+  const avgMin = ticket.avgServiceMinutes ?? SERVICE_CONFIG[ticket.serviceType]?.avgServiceMinutes ?? 5
+  const { percent: servicePercent } = useServiceTimer(
+    isServing ? ticket.servingStartedAt : null,
+    avgMin,
+  )
   const serviceConfig = SERVICE_CONFIG[ticket.serviceType]
   const Icon = ICON_MAP[ticket.serviceType as keyof typeof ICON_MAP] || Activity
   const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS.waiting
@@ -111,13 +117,9 @@ export function TicketCard({ ticket }: TicketCardProps) {
           {/* Progress Bar or Dashed Line */}
           {isServing && ticket.servingStartedAt ? (
             <div className="flex-1 mx-6 h-1.5 bg-sage/10 rounded-full overflow-hidden relative">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${Math.min(100, ((Date.now() - ticket.servingStartedAt) / ((SERVICE_CONFIG[ticket.serviceType]?.avgServiceMinutes || 5) * 60 * 1000)) * 100)}%`
-                }}
-                transition={{ duration: 1, ease: 'linear' }}
-                className="h-full bg-emerald-400"
+              <div
+                className="h-full bg-emerald-400 transition-all duration-1000"
+                style={{ width: `${servicePercent}%` }}
               />
             </div>
           ) : (

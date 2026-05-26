@@ -161,6 +161,35 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
     void refreshQueue(updated)
   }, [allTickets, myTicket, ticketId, t, refreshQueue])
 
+  useEffect(() => {
+    if (!ticket || ticket.status === 'completed' || ticket.status === 'cancelled') return
+
+    const poll = async () => {
+      if (document.hidden) return
+      await syncFromApi()
+      const resolved = await resolveTicketById(ticketId)
+      if (!resolved) return
+
+      const statusChanged =
+        prevStatus.current !== null && resolved.status !== prevStatus.current
+
+      if (statusChanged && resolved.status === 'completed') {
+        toast.success(t('serviceComplete') ?? 'Your service is complete. Thank you!', {
+          position: 'top-center',
+        })
+      }
+
+      prevStatus.current = resolved.status
+      prevPosition.current = resolved.position
+      setTicket(resolved)
+      await refreshQueue(resolved)
+    }
+
+    void poll()
+    const interval = setInterval(() => void poll(), 3000)
+    return () => clearInterval(interval)
+  }, [ticketId, ticket?.status, syncFromApi, refreshQueue, t])
+
   const serviceQueue = useMemo(() => {
     if (!ticket) return []
     if (departmentQueue.length > 0) {
@@ -211,19 +240,16 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
 
       <div className="flex-1 h-full lg:overflow-y-auto z-10 p-6 lg:p-12">
         <div className="max-w-2xl mx-auto">
-          {serviceQueue.length > 0 ? (
-            <div className="space-y-10">
-              <QueueStatus ticket={ticket} totalInQueue={serviceQueue.length} />
+          <div className="space-y-10">
+            <QueueStatus ticket={ticket} queue={serviceQueue} />
+            {serviceQueue.length > 0 ? (
               <WaitingList tickets={serviceQueue} currentUserTicketId={ticket.id} />
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <div className="mb-10 w-48 h-48 mx-auto relative">
-                <Image src="/images/queue-empty.png" alt="Empty" fill className="object-contain" />
-              </div>
-              <h3 className="text-2xl font-bold">{t('queueEmpty')}</h3>
-            </div>
-          )}
+            ) : ticket.status === 'completed' ? null : (
+              <p className="text-center text-sm text-sage/50 font-medium">
+                {t('queueRefreshing') ?? 'Refreshing live queue…'}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </main>
