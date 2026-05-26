@@ -212,7 +212,19 @@ export const translations: Translations = {
     activeTicketBannerTitle: { en: "Active Ticket Found", fr: "Ticket actif trouvé", rw: "Tike yabonetse" },
     activeTicketBannerAction: { en: "Resume Waiting", fr: "Continuer l'attente", rw: "Komeza utegereje" },
 
-    // MyTicketsPanel missing keys
+    sameNameHint: { en: "Using the same name as your existing tickets", fr: "Utilise le même nom que vos tickets existants", rw: "Ukoresha amazina amwe n'ayandi matike yawe" },
+    deferredTicketCreated: { en: "Ticket booked! It will activate once your current service is complete.", fr: "Ticket réservé! Il s'activera une fois votre service actuel terminé.", rw: "Tike yafashwe! Izakora numara serivisi yawe ya mbere irangira." },
+    ticketGenerated: { en: "Ticket generated successfully!", fr: "Ticket généré avec succès!", rw: "Tike yatanzwe neza!" },
+    generateFailed: { en: "Failed to generate ticket. Please try again.", fr: "Échec de la génération. Réessayez.", rw: "Tike ntiyatanzwe. Ongera ugerageze." },
+    systemError: { en: "A system error occurred.", fr: "Une erreur système s'est produite.", rw: "Habaye ikibazo cya sisitemu." },
+
+    backToHome: { en: "Back to Home", fr: "Retour à l'accueil", rw: "Subira Ahabanza" },
+    positionUpdated: { en: "Position updated", fr: "Position mise à jour", rw: "Umwanya wahinduwe" },
+    serviceComplete: { en: "Your service is complete. Thank you!", fr: "Votre service est terminé. Merci!", rw: "Serivisi yawe irarangiye. Murakoze!" },
+    queueRefreshing: { en: "Refreshing live queue…", fr: "Actualisation de la file…", rw: "Kuvugurura umurongo…" },
+    moreService: { en: "more service", fr: "service de plus", rw: "serivisi imwe yongeye" },
+    moreServices: { en: "more services", fr: "services de plus", rw: "serivisi eziyongeye" },
+
     myServicesTitle: { en: "My booked services", fr: "Mes services réservés", rw: "Serivisi nasabye" },
     oneServiceBooked: { en: "1 service booked", fr: "1 service réservé", rw: "Serivisi 1 yasabwe" },
     servicesBooked: { en: "services booked", fr: "services réservés", rw: "serivisi zasabwe" },

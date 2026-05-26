@@ -21,6 +21,7 @@ const STATUS_COLORS = {
   waiting: { bg: 'bg-amber-50', text: 'text-amber-600', dot: 'bg-amber-400', border: 'border-amber-200' },
   serving: { bg: 'bg-sage/10', text: 'text-sage', dot: 'bg-sage', border: 'border-sage/30' },
   completed: { bg: 'bg-slate-50', text: 'text-slate-400', dot: 'bg-slate-300', border: 'border-slate-200' },
+  done: { bg: 'bg-slate-50', text: 'text-slate-400', dot: 'bg-slate-300', border: 'border-slate-200' },
   cancelled: { bg: 'bg-red-50', text: 'text-red-400', dot: 'bg-red-300', border: 'border-red-200' },
 }
 
@@ -173,7 +174,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
           </div>
 
           {/* Position indicator */}
-          {ticket.status !== 'completed' && (
+          {ticket.status !== 'completed' && ticket.status !== 'done' && (
             <div className={cn(
               "flex items-center justify-between px-4 py-2 rounded-2xl border",
               statusStyle.bg, statusStyle.border
@@ -188,7 +189,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
             </div>
           )}
 
-          {ticket.status === 'completed' && (
+          {(ticket.status === 'completed' || ticket.status === 'done') && (
             <Link
               href="/#services"
               className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-lg bg-sage/10 text-[#2C3639] border border-sage/20 text-sm font-bold hover:bg-[#2C3639] hover:text-white transition-all duration-300"

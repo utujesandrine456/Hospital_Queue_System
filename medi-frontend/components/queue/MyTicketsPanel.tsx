@@ -234,7 +234,6 @@ export function MyTicketsPanel() {
                     })}
                 </div>
 
-                {/* Complete all notice when all done */}
                 {visible.length > 1 && (
                     <p className="text-center text-xs text-[#2C3639]/30 font-medium mt-4">
                         {t('sequentialNote') ?? 'Each service activates automatically after the previous one is complete'}

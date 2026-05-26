@@ -144,7 +144,7 @@ export function StaffLoginPage({
                 placeholder="Enter your username"
                 autoComplete="username"
                 required
-                className="w-full px-4 py-4 rounded-lg bg-cream text-sm text-[#2C3639] placeholder:text-[#2C3639]/35 font-semibold outline-none focus:ring-2 focus:ring-sage/80 border border-transparent"
+                className="w-full px-4 py-4 rounded-lg bg-white text-sm text-[#2C3639] placeholder:text-[#2C3639]/35 font-semibold outline-none focus:ring-2 focus:ring-sage/80 border border-transparent"
               />
             </div>
 
@@ -160,7 +160,7 @@ export function StaffLoginPage({
                 placeholder="Enter your password"
                 autoComplete="current-password"
                 required
-                className="w-full px-4 py-4 rounded-lg bg-cream text-sm text-[#2C3639] placeholder:text-[#2C3639]/35 font-semibold outline-none focus:ring-2 focus:ring-sage/80 border border-transparent"
+                className="w-full px-4 py-4 rounded-lg bg-white text-sm text-[#2C3639] placeholder:text-[#2C3639]/35 font-semibold outline-none focus:ring-2 focus:ring-sage/80 border border-transparent"
               />
             </div>
 
