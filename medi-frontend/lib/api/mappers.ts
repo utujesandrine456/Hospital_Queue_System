@@ -3,6 +3,7 @@ import type { QueueTicket, ServiceInfo, TicketStatus } from '@/types'
 import { calculateWaitTime } from '@/lib/queue/engine'
 
 function mapStatus(status: ApiTicket['status']): TicketStatus {
+  if (status === 'done' || (status as string) === 'completed') return 'completed'
   return status as TicketStatus
 }
 

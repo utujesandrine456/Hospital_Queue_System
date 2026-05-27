@@ -13,10 +13,15 @@ export class LoginDto {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto.username, dto.password);
+  }
+
+  @Post('logout')
+  logout() {
+    return { success: true, message: 'Logged out successfully' };
   }
 }

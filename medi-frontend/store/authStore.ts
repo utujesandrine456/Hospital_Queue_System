@@ -9,7 +9,7 @@ interface AuthStoreState {
   isLoggingIn: boolean
   loginError: string | null
   login: (username: string, password: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   getToken: () => string | null
 }
 
@@ -35,7 +35,15 @@ export const useAuthStore = create<AuthStoreState>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        const currentToken = get().token;
+        if (currentToken) {
+          try {
+            await authApi.logout(currentToken);
+          } catch (e) {
+            console.warn('[Store] API Logout failed', e);
+          }
+        }
         set({ token: null, loginError: null })
       },
     }),

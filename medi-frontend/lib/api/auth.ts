@@ -8,4 +8,10 @@ export const authApi = {
       body: { username, password },
     })
   },
+  logout(token: string) {
+    return apiRequest<{ success: boolean }>('/auth/logout', {
+      method: 'POST',
+      token,
+    })
+  },
 }

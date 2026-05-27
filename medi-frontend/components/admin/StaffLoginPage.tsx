@@ -23,7 +23,6 @@ export function StaffLoginPage({
   const [mounted, setMounted] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [remember, setRemember] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -33,14 +32,6 @@ export function StaffLoginPage({
     }
   }, [token, router, redirectTo])
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mediqueue_staff_username')
-
-    if (saved) {
-      setUsername(saved)
-      setRemember(true)
-    }
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,18 +39,13 @@ export function StaffLoginPage({
     const ok = await login(username.trim(), password)
 
     if (ok) {
-      if (remember) {
-        localStorage.setItem(
-          'mediqueue_staff_username',
-          username.trim()
-        )
-      } else {
-        localStorage.removeItem('mediqueue_staff_username')
-      }
+      localStorage.removeItem('mediqueue_staff_username')
 
       router.replace(redirectTo)
     }
   }
+
+
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden bg-cream">
@@ -114,7 +100,6 @@ export function StaffLoginPage({
 
         <div className="absolute bg-[#2C3639] lg:hidden" />
 
-
         <div
           className={`relative z-10 w-full max-w-xl px-6 py-12 lg:px-12 lg:pl-20 transition-all duration-550 ease-out ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
             }`}
@@ -123,7 +108,12 @@ export function StaffLoginPage({
             Welcome Back!
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
+            <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', opacity: 0 }}>
+              <input type="text" name="user" tabIndex={-1} defaultValue="" />
+              <input type="password" name="pass" tabIndex={-1} defaultValue="" />
+            </div>
+
             <div>
               <label className="block text-cream/70 text-xs font-bold mb-2 tracking-widest">
                 USERNAME
@@ -133,7 +123,8 @@ export function StaffLoginPage({
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
-                autoComplete="new-password"
+                autoComplete="nope"
+                name="staff_user_id"
                 required
                 className="w-full px-4 py-3.5 rounded-xl bg-white/10 text-cream text-sm placeholder:text-cream/30 font-medium outline-none focus:ring-2 focus:ring-sage border border-white/15 focus:border-sage transition-all"
               />
@@ -148,26 +139,14 @@ export function StaffLoginPage({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                autoComplete="current-password"
+                autoComplete="new-password"
+                name="staff_pass_key"
                 required
                 className="w-full px-4 py-3.5 rounded-xl bg-white/10 text-cream text-sm placeholder:text-cream/30 font-medium outline-none focus:ring-2 focus:ring-sage border border-white/15 focus:border-sage transition-all"
               />
             </div>
 
-            <div className="flex items-center justify-between gap-4 pt-1">
-              <label className="flex items-center gap-2.5 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="w-4 h-4 rounded border-cream/30 text-sage focus:ring-sage accent-sage"
-                />
-
-                <span className="text-sm font-semibold text-cream/80 group-hover:text-cream">
-                  Remember me
-                </span>
-              </label>
-
+            <div className="flex items-center justify-end gap-4 pt-1">
               <button
                 type="button"
                 className="cursor-pointer text-sm font-semibold text-sage/90 hover:text-cream transition-colors"

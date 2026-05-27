@@ -107,8 +107,8 @@ export default function AdminPage() {
           </motion.div>
           <button
             type="button"
-            onClick={() => logout()}
-            className="text-sm font-bold text-sage/60 hover:text-sage px-4 py-2 rounded-xl border border-sage/20"
+            onClick={async () => { await logout(); router.replace('/login'); }}
+            className="cursor-pointer text-sm font-bold bg-white text-red-500 hover:text-red-600 px-4 py-2 rounded-md border border-red-100"
           >
             Sign out
           </button>
@@ -181,8 +181,17 @@ export default function AdminPage() {
 
 
 function CommanderTab({ services, allTickets, totalStats, activeService, setActiveService, onAdvance }: any) {
+  const [statusFilter, setStatusFilter] = useState<'active' | 'waiting' | 'serving' | 'done'>('active')
+
   const tabTickets = allTickets
-    .filter((t: QueueTicket) => t.serviceType === activeService)
+    .filter((t: QueueTicket) => {
+      if (t.serviceType !== activeService) return false;
+      if (statusFilter === 'active') return t.status !== 'completed' && t.status !== 'cancelled' && t.status !== 'done';
+      if (statusFilter === 'waiting') return t.status === 'waiting';
+      if (statusFilter === 'serving') return t.status === 'serving';
+      if (statusFilter === 'done') return t.status === 'completed' || t.status === 'cancelled' || t.status === 'done';
+      return true;
+    })
     .sort((a: QueueTicket, b: QueueTicket) => a.position - b.position || a.createdAt - b.createdAt)
 
   return (
@@ -208,8 +217,8 @@ function CommanderTab({ services, allTickets, totalStats, activeService, setActi
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
-        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-none flex-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-2">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none flex-1">
           {services.map((service: ServiceInfo) => {
             const Icon = getIconForService(service)
             const count = allTickets.filter((t: QueueTicket) => t.serviceType === service.type && t.status !== 'completed').length
@@ -218,7 +227,7 @@ function CommanderTab({ services, allTickets, totalStats, activeService, setActi
                 key={service.type}
                 onClick={() => setActiveService(service.type)}
                 className={cn(
-                  'flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] md:text-sm font-bold transition-all border-2 whitespace-nowrap',
+                  'flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] md:text-sm font-bold transition-all border-2 whitespace-nowrap',
                   activeService === service.type
                     ? 'bg-sage text-cream border-sage shadow-xl shadow-sage/20'
                     : 'bg-white/40 text-sage/60 border-sage/10 hover:border-sage/30 hover:text-sage'
@@ -238,14 +247,23 @@ function CommanderTab({ services, allTickets, totalStats, activeService, setActi
             )
           })}
         </div>
-        <button
-          type="button"
-          onClick={onAdvance}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-[#2C3639] text-cream rounded-2xl font-bold text-sm shadow-xl hover:bg-sage transition-colors shrink-0"
-        >
-          <Zap size={16} strokeWidth={3} />
-          Call next patient
-        </button>
+      </div>
+
+      <div className="flex gap-2 mb-6 items-center bg-white/40 p-1.5 rounded-xl border border-sage/10 w-fit">
+        {(['active', 'waiting', 'serving', 'done'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setStatusFilter(f)}
+            className={cn(
+              'px-4 py-2 rounded-lg text-xs font-bold capitalize transition-colors',
+              statusFilter === f
+                ? 'bg-white text-sage shadow-sm border border-sage/5'
+                : 'text-sage/60 hover:text-sage hover:bg-white/50'
+            )}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
       <motion.div layout className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-4xl overflow-hidden shadow-2xl shadow-sage/10 mb-12">
@@ -286,6 +304,7 @@ function AdminTicketRow({ ticket }: { ticket: QueueTicket }) {
     waiting: { label: 'Waiting', icon: Clock, cls: 'bg-sage/5 text-sage border border-sage/10' },
     serving: { label: 'Serving', icon: Activity, cls: 'bg-sage text-cream shadow-lg shadow-sage/15 animate-pulse' },
     completed: { label: 'Discharged', icon: CheckCircle2, cls: 'bg-sage/5 text-sage/30' },
+    done: { label: 'Discharged', icon: CheckCircle2, cls: 'bg-sage/5 text-sage/30' },
     cancelled: { label: 'Cancelled', icon: Hash, cls: 'bg-red-50 text-red-600 border border-red-100' },
   }
   const { label, icon: StatusIcon, cls } = statusConfig[ticket.status] || statusConfig.waiting
@@ -478,10 +497,9 @@ function ServicesTab({ services, addService, updateService, deleteService }: any
         <button
           onClick={async () => {
             if (confirm('Are you absolutely sure? This will delete ALL patients, tickets, and your custom service configurations.')) {
-              // Use the unified reset system from store
               const store = useQueueStore.getState();
               await store.resetSystem();
-              localStorage.clear(); // Safety clear
+              localStorage.clear();
             }
           }}
           className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-500 rounded-xl font-bold text-sm border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm"
