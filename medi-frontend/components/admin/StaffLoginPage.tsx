@@ -112,16 +112,8 @@ export function StaffLoginPage({
           }}
         />
 
-        <div className="absolute inset-0 bg-[#2C3639] lg:hidden" />
+        <div className="absolute bg-[#2C3639] lg:hidden" />
 
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none hidden lg:block"
-          style={{
-            clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)',
-            backgroundImage:
-              'radial-gradient(circle at 70% 30%, #769382 0%, transparent 50%)',
-          }}
-        />
 
         <div
           className={`relative z-10 w-full max-w-xl px-6 py-12 lg:px-12 lg:pl-20 transition-all duration-550 ease-out ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
@@ -133,26 +125,24 @@ export function StaffLoginPage({
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-cream text-sm font-semibold mb-2 uppercase">
-                Username
+              <label className="block text-cream/70 text-xs font-bold mb-2 tracking-widest">
+                USERNAME
               </label>
-
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
-                autoComplete="username"
+                autoComplete="new-password"
                 required
-                className="w-full px-4 py-4 rounded-lg bg-white text-sm text-[#2C3639] placeholder:text-[#2C3639]/35 font-semibold outline-none focus:ring-2 focus:ring-sage/80 border border-transparent"
+                className="w-full px-4 py-3.5 rounded-xl bg-white/10 text-cream text-sm placeholder:text-cream/30 font-medium outline-none focus:ring-2 focus:ring-sage border border-white/15 focus:border-sage transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-cream text-sm font-semibold mb-2 uppercase">
-                Password
+              <label className="block text-cream/70 text-xs font-bold mb-2 tracking-widest">
+                PASSWORD
               </label>
-
               <input
                 type="password"
                 value={password}
@@ -160,7 +150,7 @@ export function StaffLoginPage({
                 placeholder="Enter your password"
                 autoComplete="current-password"
                 required
-                className="w-full px-4 py-4 rounded-lg bg-white text-sm text-[#2C3639] placeholder:text-[#2C3639]/35 font-semibold outline-none focus:ring-2 focus:ring-sage/80 border border-transparent"
+                className="w-full px-4 py-3.5 rounded-xl bg-white/10 text-cream text-sm placeholder:text-cream/30 font-medium outline-none focus:ring-2 focus:ring-sage border border-white/15 focus:border-sage transition-all"
               />
             </div>
 

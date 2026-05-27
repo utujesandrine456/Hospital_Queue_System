@@ -497,4 +497,15 @@ export class TicketsService implements OnModuleInit, OnModuleDestroy {
     ]);
     return { waiting, serving, done, total: waiting + serving + done };
   }
+
+  async getOverallStats() {
+    const [totalTickets, totalServed, activePatients] = await Promise.all([
+      this.prisma.ticket.count(),
+      this.prisma.ticket.count({ where: { status: TicketStatus.done } }),
+      this.prisma.ticket.count({
+        where: { status: { in: [TicketStatus.waiting, TicketStatus.serving] } },
+      }),
+    ]);
+    return { totalTickets, totalServed, activePatients };
+  }
 }

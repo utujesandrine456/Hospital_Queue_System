@@ -14,6 +14,14 @@ export const ticketsApi = {
     return apiRequest<ApiTicket[]>('/tickets/active')
   },
 
+  getOverallStats() {
+    return apiRequest<{
+      totalTickets: number;
+      totalServed: number;
+      activePatients: number;
+    }>('/tickets/stats/overall')
+  },
+
   getByPatient(patientId: string) {
     return apiRequest<ApiTicket[]>(`/tickets/patient/${patientId}`)
   },

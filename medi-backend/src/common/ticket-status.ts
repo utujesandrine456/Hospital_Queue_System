@@ -1,4 +1,3 @@
-/** Matches `enum TicketStatus` in prisma/schema.prisma */
 export const TicketStatus = {
   waiting: 'waiting',
   serving: 'serving',

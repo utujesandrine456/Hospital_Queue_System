@@ -11,7 +11,6 @@ export interface QueueTicket {
   status: TicketStatus
   position: number
   estimatedWaitMinutes: number
-  /** From department.avgServiceMinutes — how long a serving slot lasts */
   avgServiceMinutes: number
   patientName: string
   createdAt: number
@@ -47,14 +46,22 @@ export interface ServiceCounter {
   count: number
 }
 
+export interface SystemStats {
+  totalTickets: number;
+  totalServed: number;
+  activePatients: number;
+}
+
 export interface QueueStoreState {
   myTicket: QueueTicket | null        // compat getter → first active non-deferred ticket
   myTickets: QueueTicket[]            // all tickets belonging to this patient session
   patientId: string | null            // persisted session UUID
   allTickets: QueueTicket[]
+  systemStats: SystemStats | null
   pendingSync: OutboxEntry[]
   isLoading: boolean
   isCreating: boolean
+  fetchSystemStats: () => Promise<void>
   initializeQueue: (serviceType: ServiceType) => Promise<void>
   createTicket: (serviceType: ServiceType, patientName: string) => Promise<QueueTicket | null>
   chooseServingTicket: (ticketId: string) => Promise<boolean>

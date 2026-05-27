@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react'
 
 export function HeroSection() {
     const { t } = useLanguage()
-    const { allTickets, loadFromStorage } = useQueueStore()
+    const { allTickets, systemStats, loadFromStorage } = useQueueStore()
     const { services, loadServices } = useServiceStore()
     const [mounted, setMounted] = useState(false)
 
@@ -77,7 +77,7 @@ export function HeroSection() {
                             className="grid grid-cols-3 gap-4 pt-6 border-t border-[#769382]/15"
                         >
                             {[
-                                { value: mounted ? `${allTickets.length}` : '...', label: t('happyPatients') },
+                                { value: mounted ? `${systemStats?.totalTickets ?? allTickets.length}` : '...', label: t('happyPatients') },
                                 { value: mounted ? `${services.length}` : '...', label: t('services') },
                                 { value: '10+', label: t('doctors') },
                             ].map((stat) => (

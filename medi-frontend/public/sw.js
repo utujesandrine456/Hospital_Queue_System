@@ -1,6 +1,4 @@
-/* MediQueue - Smart Intercept SW v8 (The Fortress) */
-
-const CACHE_NAME = 'mediqueue-v9-nav-timeout';
+const CACHE_NAME = 'mediqueue-v10-dev-friendly';
 const OFFLINE_URL = '/';
 
 const PRECACHE_ASSETS = [
@@ -43,6 +41,15 @@ self.addEventListener('fetch', (event) => {
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
+
+    // CRITICAL FIX: Bypass Next.js HMR, dev chunks, and backend API routes
+    if (
+        url.pathname.startsWith('/_next/') ||
+        url.pathname.startsWith('/api/') ||
+        url.pathname.includes('.hot-update')
+    ) {
+        return; // act as if there is no service worker for these
+    }
 
     if (request.mode === 'navigate') {
         event.respondWith(

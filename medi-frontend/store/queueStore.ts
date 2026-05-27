@@ -29,6 +29,7 @@ export const useQueueStore = create<QueueStoreState>()(
       myTickets: [] as QueueTicket[],
       patientId: null as string | null,
       allTickets: [],
+      systemStats: null,
       pendingSync: [],
       isLoading: false,
       isCreating: false,
@@ -53,7 +54,11 @@ export const useQueueStore = create<QueueStoreState>()(
             return false
           }
 
-          const tickets = await fetchTicketsFromApi()
+          const [tickets, stats] = await Promise.all([
+            fetchTicketsFromApi(),
+            ticketsApi.getOverallStats().catch(() => null)
+          ])
+
           const { patientId, myTickets } = get()
 
           // Refresh myTickets from the server using patientId
@@ -69,13 +74,22 @@ export const useQueueStore = create<QueueStoreState>()(
             }
           }
 
-          set({ allTickets: tickets, myTickets: updatedMyTickets, useApi: true, apiError: null })
+          set({ allTickets: tickets, myTickets: updatedMyTickets, systemStats: stats, useApi: true, apiError: null })
           return true
         } catch (err) {
           const message =
             err instanceof Error ? err.message : 'Failed to load queue from server'
           set({ apiError: message, useApi: false })
           return false
+        }
+      },
+
+      fetchSystemStats: async () => {
+        try {
+          const stats = await ticketsApi.getOverallStats()
+          set({ systemStats: stats })
+        } catch {
+          // Keep existing stats on failure
         }
       },
 

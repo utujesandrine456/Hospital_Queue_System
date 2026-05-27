@@ -341,7 +341,6 @@ export function ServiceSelector() {
         )}
       </AnimatePresence>
 
-      {/* Multi-ticket panel */}
       <MyTicketsPanel />
     </div>
   )

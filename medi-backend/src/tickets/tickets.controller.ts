@@ -33,6 +33,11 @@ export class TicketsController {
     return this.svc.getQueueIntegrity(id);
   }
 
+  @Get('stats/overall')
+  getOverallStats() {
+    return this.svc.getOverallStats();
+  }
+
   @Get('stats/:departmentId')
   @UseGuards(JwtAuthGuard)
   getStats(@Param('departmentId', ParseIntPipe) id: number) {
