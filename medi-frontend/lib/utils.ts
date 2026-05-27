@@ -32,6 +32,7 @@ export function getStatusText(status: TicketStatus, position: number): string {
     case 'serving':
       return 'Please proceed — you are being served now'
     case 'completed':
+    case 'done':
       return 'Your visit is complete. Thank you!'
     case 'cancelled':
       return 'This ticket has been cancelled'
@@ -44,7 +45,8 @@ export function getStatusColor(status: TicketStatus): string {
   switch (status) {
     case 'waiting': return 'text-sage'
     case 'serving': return 'text-sage'
-    case 'completed': return 'text-sage/40'
+    case 'completed':
+    case 'done': return 'text-sage/40'
     case 'cancelled': return 'text-sage/30'
     default: return 'text-sage/40'
   }

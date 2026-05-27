@@ -14,7 +14,7 @@ interface QueueStatusProps {
 
 export function QueueStatus({ ticket, queue }: QueueStatusProps) {
   const isServing = ticket.status === 'serving'
-  const isCompleted = ticket.status === 'completed'
+  const isCompleted = ticket.status === 'completed' || ticket.status === 'done'
   const isWaiting = ticket.status === 'waiting'
 
   const avgMin = ticket.avgServiceMinutes ?? SERVICE_CONFIG[ticket.serviceType]?.avgServiceMinutes ?? 5
@@ -48,7 +48,7 @@ export function QueueStatus({ ticket, queue }: QueueStatusProps) {
         <div className="flex items-center gap-4">
           <div
             className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500',
+              'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500',
               isServing ? 'bg-sage text-cream shadow-md' : 'bg-sage/10 text-sage',
             )}
           >
@@ -128,9 +128,9 @@ export function QueueStatus({ ticket, queue }: QueueStatusProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-6 px-4"
+          className="text-center py-2 px-4"
         >
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-sage/5 border border-sage/10 text-sage/60 font-bold text-xs italic">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-sage border border-sage/10 text-white font-bold text-xs italic">
             <Sparkles size={14} />
             Service complete. Thank you for visiting!
             <Sparkles size={14} />

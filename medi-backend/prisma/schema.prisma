@@ -47,3 +47,13 @@ model Ticket {
   @@index([patientId])
   @@map("tickets")
 }
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+
+  @@map("users")
+}

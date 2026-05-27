@@ -14,7 +14,6 @@ import { QueueStatus } from '@/components/queue/QueueStatus'
 import { WaitingList } from '@/components/queue/WaitingList'
 import { ArrowLeft } from 'lucide-react'
 import type { QueueTicket } from '@/types'
-import Image from 'next/image'
 import { FullScreenLoader } from '@/components/ui/Loader'
 import { useLanguage } from '@/context/LanguageContext'
 import { toast } from 'sonner'
@@ -162,7 +161,7 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
   }, [allTickets, myTicket, ticketId, t, refreshQueue])
 
   useEffect(() => {
-    if (!ticket || ticket.status === 'completed' || ticket.status === 'cancelled') return
+    if (!ticket || ticket.status === 'completed' || ticket.status === 'done' || ticket.status === 'cancelled') return
 
     const poll = async () => {
       if (document.hidden) return
@@ -173,7 +172,7 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
       const statusChanged =
         prevStatus.current !== null && resolved.status !== prevStatus.current
 
-      if (statusChanged && resolved.status === 'completed') {
+      if (statusChanged && (resolved.status === 'completed' || resolved.status === 'done')) {
         toast.success(t('serviceComplete') ?? 'Your service is complete. Thank you!', {
           position: 'top-center',
         })
@@ -241,10 +240,12 @@ export function PublicTicketView({ ticketId, onBack }: PublicTicketViewProps) {
       <div className="flex-1 h-full lg:overflow-y-auto z-10 p-6 lg:p-12">
         <div className="max-w-2xl mx-auto">
           <div className="space-y-10">
-            <QueueStatus ticket={ticket} queue={serviceQueue} />
+            {!ticket.deferred && (
+              <QueueStatus ticket={ticket} queue={serviceQueue} />
+            )}
             {serviceQueue.length > 0 ? (
               <WaitingList tickets={serviceQueue} currentUserTicketId={ticket.id} />
-            ) : ticket.status === 'completed' ? null : (
+            ) : (ticket.status === 'completed' || ticket.status === 'done') ? null : (
               <p className="text-center text-sm text-sage/50 font-medium">
                 {t('queueRefreshing') ?? 'Refreshing live queue…'}
               </p>

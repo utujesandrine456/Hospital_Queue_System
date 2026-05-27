@@ -74,8 +74,8 @@ export function WaitingList({ tickets, currentUserTicketId }: WaitingListProps) 
     <div className="h-full flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-[#2C3639]">Waiting Lounge</h3>
-          <p className="text-sm font-medium text-sage/50 mt-0.5">Live from hospital server</p>
+          <h3 className="text-2xl font-bold text-[#2C3639]">Waiting Line</h3>
+          <p className="text-sm font-medium text-sage/50 mt-0.5">Real Time Data about queue update.</p>
         </div>
         <div className="flex items-center gap-2.5 px-4 py-3 rounded-md bg-white border border-sage/10 shadow-sm text-sage">
           <Users size={16} strokeWidth={2.5} />
