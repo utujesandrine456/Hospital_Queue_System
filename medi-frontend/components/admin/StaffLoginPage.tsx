@@ -89,7 +89,6 @@ export function StaffLoginPage({
         </div>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="relative flex-1 flex items-center justify-center lg:min-h-screen">
         <div
           className="absolute inset-0 bg-[#2C3639] lg:block hidden"
